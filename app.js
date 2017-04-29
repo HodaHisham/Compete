@@ -2,6 +2,7 @@ var express = require('express');
 var User    = require('../models/users');
 var router  = express.Router();
 var app     = express();
+var http    = require('http');
 
 app.get('/webhook', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
@@ -61,7 +62,7 @@ function receivedMessage(event) {
            				 else
                 			res.json({ message: 'User created!' });
         			});
-            		sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"');
+            		sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
             	}
             	else{
             		//handle user messages
@@ -72,6 +73,7 @@ function receivedMessage(event) {
   					if(messageText.length()>6){
   						if(messageText.substring(0,8).equals('handle: ')){
   							//check for correctness of handle
+  							http.get // --------------------------------------------------------------was working here
 						}
 
   					}
