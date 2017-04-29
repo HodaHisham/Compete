@@ -3,6 +3,7 @@ var User    = require('../models/users');
 var router  = express.Router();
 var app     = express();
 var http    = require('http');
+var request = require('request');
 
 app.get('/webhook', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
@@ -48,43 +49,65 @@ function receivedMessage(event) {
   var timeOfMessage = event.timestamp;
   var message = event.message;
 
-  User.findOne({ fb_id : senderID } , function(err, user) {
+  User.findOne({ fbId : senderID } , function(err, user) {
             if (err)
                 res.send(err);
             else
             {
-            	if(!user){
-            		var user = new User();
-            		user.fb_id= senderID;
-            		user.save(function(err) {
-            			if (err)
-                			console.log(err);
-           				 else
-                			res.json({ message: 'User created!' });
-        			});
-            		sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
-            	}
-            	else{
-            		//handle user messages
-            		var messageId = message.mid;
-  					String messageText = message.text.toString();
-  					var messageAttachments = message.attachments;
+              if(!user){
+                var user = new User();
+                user.fbId= senderID;
+                user.save(function(err) {
+                  if (err)
+                      console.log(err);
+                   else
+                      res.json({ message: 'User created!' });
+              });
+                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+              }
+              else{
+                //handle user messages
+                var messageId = message.mid;
+            String messageText = message.text.toString();
+            var messageAttachments = message.attachments;
 
-  					if(messageText.length()>6){
-  						if(messageText.substring(0,8).equals('handle: ')){
-  							//check for correctness of handle
-  							http.get // --------------------------------------------------------------was working here
-						}
-
-  					}
-  						}
-
-
-            	}
-
-             
+            if(messageText.length()>6){
+              if(messageText.substring(0,8).equals('handle: ')){
+                //check for correctness of handle
+                
+               request({
+                    url: 'codeforces.com/api/user.info?handles='+handle,
+                    method: 'GET',
+                    // json: {
+                    //   recipient: {id:sender},
+                    //   message: messageData,
+                    // }
+                  }, function(error, response, body) {
+                    if (error) {
+                      console.log('Error sending messages: ', error)
+                    } else if (response.body.error) {
+                      console.log('Error: ', response.body.error)
+                    }
+                    else if(response.body.status==='FAILED'){
+                      sendTextMessage(senderID, 'Handle does not exist. Please try again');
+                      return;
+                    }
+                    else {
+                      user.cfHandle= handle;
+                      user.save(function(err) {
+                         if (err)
+                            console.log(err);
+                          else
+                            res.json({ message: 'hanlde updated' });
+                      //----------------------------------------start handling the subscription phase
+              });
+                    }
+              });
             }
-  });
+          }
+        }
+      }
+    });
 }
 
   function sendTextMessage(recipientId, messageText) {
