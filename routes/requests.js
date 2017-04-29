@@ -1,6 +1,7 @@
 var http = require('http');
-
+var num  = 1;
 module.exports.getContests = function(gym, cb){
+  setInterval(function(){
     // Assign the HTTP request host/path
     var options = {
     	host: "codeforces.com",
@@ -16,6 +17,7 @@ module.exports.getContests = function(gym, cb){
     	});
     	res.on('end', function(){
         cb(data);
+        console.log(num++);
       });
     }).on('error', function(e){
       cb(e);
@@ -23,4 +25,5 @@ module.exports.getContests = function(gym, cb){
 
     	this.abort();
     });
+  }, 60000);
 };
