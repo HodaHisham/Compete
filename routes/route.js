@@ -1,13 +1,28 @@
 var express = require('express');
 var User    = require('../models/users');
+var request = require('../routes/requests');
 var router  = express.Router();
-
 // router.get('/', function(req, res){
 //   res.json({ message: 'hooray! welcome to our api!' });
 // });
 
 router.get('/', function(req, res) {
       res.sendfile('./views/index.html');
+});
+
+// // for Facebook verification
+// router.get('/webhook/', function (req, res) {
+// 	if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
+// 		res.send(req.query['hub.challenge'])
+// 	}
+// 	res.send('Error, wrong token')
+// });
+
+router.get('/contests/:gym', function (req, res) {
+  // GET CONTESTS LIST
+  request.getContests(req.params.gym, function(mes) {
+    res.send(mes);
+  });
 });
 
 router.post('/user', function(req, res) {

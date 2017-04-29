@@ -1,10 +1,10 @@
 // PACKAGES SET UP
-var express = require('express');
+var express    = require('express');
 var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var db = require('./db');
-var router = require('./routes/route');
-var app     = express();
+var mongoose   = require('mongoose');
+var db         = require('./db');
+var router     = require('./routes/route');
+var app        = express();
 
 // CONFIGURE APP TO USE bodyparser
 app.use(bodyParser.urlencoded( {extended: true }));
