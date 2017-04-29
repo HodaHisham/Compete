@@ -56,12 +56,14 @@ router.delete('/user/:user_id', function(req, res) {
 });
 
 router.put('/user/:user_id', function(req, res) {
-  User.find({ fb_id : req.params.user_id } , function(err, user) {
+
+    
+  User.findOne({ fb_id : req.params.user_id } , function(err, user) {
             if (err)
                 res.send(err);
             else
             {
-              user.fb_id = req.body.fb_id;
+              user.fb_id = req.params.user_id;
               user.cf_handle = req.body.cf_handle;
               user.name = req.body.name;
               user.div1 = req.body.div1;
