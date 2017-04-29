@@ -2,12 +2,12 @@ var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
 
 var UserSchema   = new Schema({
-    id : {
+    fb_id : {
       type: String,
       required : true
     },
     name: String,
-    handle: String,
+    cf_handle: String,
     div1: Boolean,
     div2: Boolean,
     other: Boolean,

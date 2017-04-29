@@ -13,8 +13,8 @@ router.get('/', function(req, res) {
 router.post('/user', function(req, res) {
 
         var user = new User();
-        user.id = req.body.id;
-        user.handle = req.body.handle;
+        user.fb_id = req.body.id;
+        user.cf_handle = req.body.handle;
 
         user.save(function(err) {
             if (err)
