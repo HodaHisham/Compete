@@ -13,8 +13,8 @@ router.get('/', function(req, res) {
 router.post('/user', function(req, res) {
 
         var user = new User();
-        user.fb_id = req.body.fb_id;
-        user.cf_handle = req.body.cf_handle;
+        user.fbId = req.body.fbId;
+        user.cfHandle = req.body.cfHandle;
 
         user.save(function(err) {
             if (err)
@@ -38,7 +38,7 @@ router.get('/user', function(req, res) {
 });
 
 router.get('/user/:user_id', function(req, res) {
-  User.find({ fb_id : req.params.user_id } , function(err, user) {
+  User.find({ fbId : req.params.user_id } , function(err, user) {
             if (err)
                 res.send(err);
             else
@@ -47,7 +47,7 @@ router.get('/user/:user_id', function(req, res) {
 });
 
 router.delete('/user/:user_id', function(req, res) {
-  User.remove({ fb_id : req.params.user_id } , function(err, user) {
+  User.remove({ fbId : req.params.user_id } , function(err, user) {
             if (err)
                 res.send(err);
             else
@@ -58,13 +58,13 @@ router.delete('/user/:user_id', function(req, res) {
 router.put('/user/:user_id', function(req, res) {
 
     
-  User.findOne({ fb_id : req.params.user_id } , function(err, user) {
+  User.findOne({ fbId : req.params.user_id } , function(err, user) {
             if (err)
                 res.send(err);
             else
             {
-              user.fb_id = req.params.user_id;
-              user.cf_handle = req.body.cf_handle;
+              user.fbId = req.params.user_id;
+              user.cfHandle = req.body.cfHandle;
               user.name = req.body.name;
               user.div1 = req.body.div1;
               user.div2 = req.body.div2;
