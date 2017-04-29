@@ -1,3 +1,8 @@
+var express = require('express');
+var User    = require('../models/users');
+var router  = express.Router();
+var app     = express();
+
 app.get('/webhook', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === <VERIFY_TOKEN>) {  // -----------------waiting to deploy to get VERIFY_TOKEN
@@ -42,42 +47,81 @@ function receivedMessage(event) {
   var timeOfMessage = event.timestamp;
   var message = event.message;
 
-  User.findOne({ id : req.params.user_id } , function(err, user) {
+  User.findOne({ fb_id : senderID } , function(err, user) {
             if (err)
                 res.send(err);
             else
             {
             	if(!user){
-            		// first time to message
+            		var user = new User();
+            		user.fb_id= senderID;
+            		user.save(function(err) {
+            			if (err)
+                			console.log(err);
+           				 else
+                			res.json({ message: 'User created!' });
+        			});
+            		sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"');
             	}
             	else{
             		//handle user messages
+            		var messageId = message.mid;
+  					String messageText = message.text.toString();
+  					var messageAttachments = message.attachments;
+
+  					if(messageText.length()>6){
+  						if(messageText.substring(0,8).equals('handle: ')){
+  							//check for correctness of handle
+						}
+
+  					}
+  						}
+
+
             	}
 
              
             }
   });
-  // console.log("Received message for user %d and page %d at %d with message:", 
-  //   senderID, recipientID, timeOfMessage);
-  // console.log(JSON.stringify(message));
-
-  // var messageId = message.mid;
-
-  // var messageText = message.text;
-  // var messageAttachments = message.attachments;
-
-  // if (messageText) {
-
-   
-  //   switch (messageText) {
-  //     case 'generic':
-  //       sendGenericMessage(senderID);
-  //       break;
-
-  //     default:
-  //       sendTextMessage(senderID, messageText);
-  //   }
-  // } else if (messageAttachments) {
-  //   sendTextMessage(senderID, "Message with attachment received");
-  // }
 }
+
+  function sendTextMessage(recipientId, messageText) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: messageText
+    }
+  };
+
+  callSendAPI(messageData);
+}
+
+function callSendAPI(messageData) {
+  request({
+    uri: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: { access_token: PAGE_ACCESS_TOKEN },
+    method: 'POST',
+    json: messageData
+
+  }, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var recipientId = body.recipient_id;
+      var messageId = body.message_id;
+
+      console.log("Successfully sent generic message with id %s to recipient %s", 
+        messageId, recipientId);
+    } else {
+      console.error("Unable to send message.");
+      console.error(response);
+      console.error(error);
+    }
+  });  
+}
+
+
+
+
+
+
