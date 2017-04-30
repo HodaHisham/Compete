@@ -69,9 +69,7 @@ function receivedMessage(event) {
               if(!user) {
                 var user = new User();
                 user.fbId= senderID;
-                user.save(function(err){
-
-
+                user.save(function(err) {
                   if (err)
                       console.log(err);
                    else
