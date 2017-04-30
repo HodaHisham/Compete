@@ -32,8 +32,7 @@ var port = process.env.PORT || 5000;
 app.use('/api', router);
 app.use('/webhook',bot);
 
+
 // STARTING THE SERVER
 app.listen(port);
 console.log('Magic happens on port ' + port);
-
-

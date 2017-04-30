@@ -10,7 +10,7 @@ router.get('/', function(req, res){
 
 // just for testing
 router.get('/cf/:handle/', function(req, res) {
-      
+
       request({
                     url: 'http://codeforces.com/api/user.info?handles='+req.params.handle,
                     method: 'GET',
@@ -19,7 +19,7 @@ router.get('/cf/:handle/', function(req, res) {
                     //   message: messageData,
                     // }
                   }, function(error, response, body) {
-                    
+
                     if (error) {
                       console.log('Error sending messages: ', error)
                     } else if (response.body.error) {
@@ -33,7 +33,7 @@ router.get('/cf/:handle/', function(req, res) {
                       return;
                     }
                     else {
-                      
+
                       console.log(obj.status,error);
 
                     }
@@ -92,7 +92,7 @@ router.delete('/user/:user_id', function(req, res) {
 
 router.put('/user/:user_id', function(req, res) {
 
-    
+
   User.findOne({ fbId : req.params.user_id } , function(err, user) {
             if (err)
                 res.send(err);
@@ -119,5 +119,8 @@ router.put('/user/:user_id', function(req, res) {
             }
   });
 });
+
+
+
 
 module.exports = router;
