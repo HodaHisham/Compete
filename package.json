@@ -1,28 +1,35 @@
 {
   "name": "compete",
   "version": "1.0.0",
- "engines": {
+  "engines": {
     "npm": "3.10.10",
     "node": "v6.10.2"
-
   },
   "description": "This is a bot that helps competitive programmers in their practice",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "dependencies": {
-       "express": "~4.15.2",
-       "mongoose": "~4.9.6",
-       "body-parser": "~1.17.1",
-       "request": "^2.81.0"
-
-   },
-  
+    "express": "~4.15.2",
+    "mongoose": "~4.9.6",
+    "body-parser": "~1.17.1",
+    "request": "^2.81.0"
+  },
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/HodaHisham/Compete/issues"
   },
-  "homepage": "https://github.com/HodaHisham/Compete#readme"
+  "homepage": "https://github.com/HodaHisham/Compete#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HodaHisham/Compete.git"
+  },
+  "keywords": []
 }
