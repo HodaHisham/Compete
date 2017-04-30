@@ -72,10 +72,10 @@ function receivedMessage(event) {
             var messageText = message.text;
             var messageAttachments = message.attachments;
 
-            if(messageText.length()>6){
+            if(messageText.length()>7){
               if(messageText.substring(0,8).equals('handle: ')){
                 //check for correctness of handle
-                
+                var handle = messageText.substring(8);
                request({
                     url: 'http://codeforces.com/api/user.info?handles='+handle,
                     method: 'GET',
