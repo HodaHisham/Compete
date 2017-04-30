@@ -1,29 +1,29 @@
 var express = require('express');
 var User    = require('./models/users');
-var router  = express.Router();
 var http    = require('http');
 var request = require('request');
+var router  = express.Router();
 
 
 router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) { 
+      req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
     console.log("Validating webhook");
     res.status(200).send(req.query['hub.challenge']);
   } else {
     console.error("Failed validation. Make sure the validation tokens match.");
-    res.sendStatus(403);          
-  }  
+    res.sendStatus(403);
+  }
 });
 
 
 router.post('/', function (req, res) {
   console.log("entered post of webhook");
   var data = req.body;
-  
+
   // Make sure this is a page subscription
   if (data.object === 'page') {
-    
+
     // Iterate over each entry - there may be multiple if batched
     data.entry.forEach(function(entry) {
       var pageID = entry.id;
@@ -41,7 +41,7 @@ router.post('/', function (req, res) {
       });
     });
 
-    
+
     res.sendStatus(200);
   }
 });
@@ -53,18 +53,18 @@ function receivedMessage(event) {
   var message = event.message;
 
   User.findOne({ fbId : senderID } , function(err, user) {
-                 
+
 
             if (err)
                 console.log(err);
             else
             {
               if(!user){
-                  
+
                 var user = new User();
                 user.fbId= senderID;
                 user.save(function(err) {
-                                                 
+
 
                   if (err)
                       console.log(err);
@@ -93,7 +93,7 @@ function receivedMessage(event) {
                    request({
                       url: 'http://codeforces.com/api/user.info?handles='+handle,
                       method: 'GET',
-                    
+
                      }, function(error, response, body) {
 
                     if (error) {
@@ -101,7 +101,7 @@ function receivedMessage(event) {
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error)
                     }
-                    else{ 
+                    else{
 
                       obj = JSON.parse(body);
                       if(obj.status === 'FAILED'){
@@ -115,10 +115,10 @@ function receivedMessage(event) {
                             console.log(err);
                           else
                             console.log('handle updated');
-                      
+
                           sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
-                          
-                          
+
+
 
                       });
                     }
@@ -158,18 +158,15 @@ function callSendAPI(messageData) {
       var recipientId = body.recipient_id;
       var messageId = body.message_id;
 
-      console.log("Successfully sent generic message with id %s to recipient %s", 
+      console.log("Successfully sent generic message with id %s to recipient %s",
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
       console.error(response);
       console.error(error);
     }
-  });  
+  });
 }
 
 
 module.exports = router;
-
-
-
