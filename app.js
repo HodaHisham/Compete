@@ -80,7 +80,7 @@ function receivedMessage(event) {
             var messageText = message.text;
             var messageAttachments = message.attachments;
 
-            if(messageText.length()>8){
+            if(messageText.length>8){
               if(messageText.substring(0,8).equals('handle: ')){
                 //check for correctness of handle
                 var handle = messageText.substring(8);
@@ -113,6 +113,10 @@ function receivedMessage(event) {
                           else
                             console.log('handle updated');
                       //----------------------------------------start handling the subscription phase
+                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\n');
+                          sendTextMessage(senderID, 'To subscribe copy and paste the next message and remove unwanted subscriptions');
+                          sendTextMessage(senderID,'sub:\n rated unrated\n  ')
+
                       });
                     }
 
