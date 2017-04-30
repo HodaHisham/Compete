@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var db = require('./db');
 var router = require('./routes/route');
 var app     = express();
+var bot = require('./app');
 
 // CONFIGURE APP TO USE bodyparser
 app.use(bodyParser.urlencoded( {extended: true }));
@@ -18,6 +19,7 @@ var port = process.env.PORT || 8080;
 
 // REGISTERING ROUTES
 app.use('/api', router);
+app.use('/webhook',bot);
 
 // STARTING THE SERVER
 app.listen(port);
