@@ -108,14 +108,15 @@ module.exports.monitorRating = function(id, con){
                   var item = JSON.parse(array[i]);
                   User.findOne({ cfHandle : item.handle } , function(err, user) {
                    if(!err){
-                     sendTextMessage();
+                     sendTextMessage(user.fbId, item.newRating > item.oldRating?'Congrats! You earned ' + (item.newRating - item.oldRating) + ' rating points')
+                     :'You lost '+ (item.oldRating - item.newRating) + 'points! I know you can do it next time! Keep up the hard work :D');
                    }
                  }
                }
+              clearInterval(interv);
               con.ratingCh = true;
             }
         }
     });
-    clearInterval(interv);
   }, 60000);
 }
