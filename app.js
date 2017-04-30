@@ -8,7 +8,7 @@ module.exports = router;
 
 app.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] === 'hello') {  // -----------------waiting to deploy to get VERIFY_TOKEN
+      req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) { 
     console.log("Validating webhook");
     res.status(200).send(req.query['hub.challenge']);
   } else {
@@ -72,7 +72,7 @@ function receivedMessage(event) {
             var messageText = message.text;
             var messageAttachments = message.attachments;
 
-            if(messageText.length()>7){
+            if(messageText.length()>8){
               if(messageText.substring(0,8).equals('handle: ')){
                 //check for correctness of handle
                 var handle = messageText.substring(8);

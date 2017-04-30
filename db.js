@@ -1,4 +1,4 @@
 
 module.exports = {
-        url : 'mongodb://localhost/CompeteDB'
+        url : 'mongodb://localhost:27017/CompeteDB'
 }

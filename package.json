@@ -1,6 +1,11 @@
 {
   "name": "compete",
   "version": "1.0.0",
+ "engines": {
+    "npm": "3.10.10",
+    "node": "v6.10.2"
+
+  },
   "description": "This is a bot that helps competitive programmers in their practice",
   "main": "server.js",
   "scripts": {
@@ -11,11 +16,9 @@
        "mongoose": "~4.9.6",
        "body-parser": "~1.17.1",
        "request": "^2.81.0"
+
    },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HodaHisham/Compete.git"
-  },
+  
   "author": "",
   "license": "ISC",
   "bugs": {
