@@ -1,12 +1,11 @@
 var express = require('express');
 var User    = require('./models/users');
 var router  = express.Router();
-var app     = express();
 var http    = require('http');
 var request = require('request');
-module.exports = router;
 
-app.get('/', function(req, res) {
+
+router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) { 
     console.log("Validating webhook");
@@ -18,12 +17,13 @@ app.get('/', function(req, res) {
 });
 
 
-app.post('/', function (req, res) {
+router.post('/', function (req, res) {
+  console.log("entered post of webhook");
   var data = req.body;
-
+  
   // Make sure this is a page subscription
   if (data.object === 'page') {
-
+    console.log("entered page part");
     // Iterate over each entry - there may be multiple if batched
     data.entry.forEach(function(entry) {
       var pageID = entry.id;
@@ -32,6 +32,8 @@ app.post('/', function (req, res) {
       // Iterate over each messaging event
       entry.messaging.forEach(function(event) {
         if (event.message) {
+              console.log("entered event message");
+
           receivedMessage(event);
         } else {
           console.log("Webhook received unknown event: ", event);
@@ -51,19 +53,27 @@ function receivedMessage(event) {
   var message = event.message;
 
   User.findOne({ fbId : senderID } , function(err, user) {
+                  console.log("entered call back find user");
+
             if (err)
                 res.send(err);
             else
             {
               if(!user){
+                                  console.log("not a saved user");
+
                 var user = new User();
                 user.fbId= senderID;
                 user.save(function(err) {
+                                                                    console.log("saved user");
+
                   if (err)
                       console.log(err);
                    else
                       res.json({ message: 'User created!' });
               });
+                                                  console.log("b4 welcome");
+
                 sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
               }
               else{
@@ -133,7 +143,7 @@ function receivedMessage(event) {
 function callSendAPI(messageData) {
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: { access_token: PAGE_ACCESS_TOKEN },
+    qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
     method: 'POST',
     json: messageData
 
@@ -153,7 +163,7 @@ function callSendAPI(messageData) {
 }
 
 
-
+module.exports = router;
 
 
 
