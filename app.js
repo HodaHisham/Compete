@@ -5,9 +5,9 @@ var app     = express();
 var http    = require('http');
 var request = require('request');
 
-app.get('/webhook', function(req, res) {
+app.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] === <VERIFY_TOKEN>) {  // -----------------waiting to deploy to get VERIFY_TOKEN
+      req.query['hub.verify_token'] === 'hello') {  // -----------------waiting to deploy to get VERIFY_TOKEN
     console.log("Validating webhook");
     res.status(200).send(req.query['hub.challenge']);
   } else {
@@ -17,7 +17,7 @@ app.get('/webhook', function(req, res) {
 });
 
 
-app.post('/webhook', function (req, res) {
+app.post('/', function (req, res) {
   var data = req.body;
 
   // Make sure this is a page subscription
@@ -68,7 +68,7 @@ function receivedMessage(event) {
               else{
                 //handle user messages
                 var messageId = message.mid;
-            String messageText = message.text.toString();
+            var messageText = message.text;
             var messageAttachments = message.attachments;
 
             if(messageText.length()>6){

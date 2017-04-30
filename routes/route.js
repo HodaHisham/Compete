@@ -1,10 +1,45 @@
 var express = require('express');
 var User    = require('../models/users');
 var router  = express.Router();
+var http    = require('http');
+var request = require('request');
 
 // router.get('/', function(req, res){
 //   res.json({ message: 'hooray! welcome to our api!' });
 // });
+
+
+router.get('/cf/:handle', function(req, res) {
+      
+      request({
+                    url: 'codeforces.com/api/user.info?handles='+handle,
+                    method: 'GET',
+                    // json: {
+                    //   recipient: {id:sender},
+                    //   message: messageData,
+                    // }
+                  }, function(error, response, body) {
+                    if (error) {
+                      console.log('Error sending messages: ', error)
+                    } else if (response.body.error) {
+                      console.log('Error: ', response.body.error)
+                    }
+                    else if(response.body.status==='FAILED'){
+                      console.log('Handle does not exist. Please try again',error);
+                      return;
+                    }
+                    else {
+                      user.cfHandle= handle;
+                      user.save(function(err) {
+                         if (err)
+                            console.log(err);
+                          else
+                            res.json({ message: 'handle updated' });
+                      //----------------------------------------start handling the subscription phase
+              });
+                    }
+              });
+});
 
 router.get('/', function(req, res) {
       res.sendfile('./views/index.html');
