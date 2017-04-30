@@ -85,7 +85,7 @@ module.exports.getContests = function(gym, cb){
 };
 
 
-module.exports.monitorRating = function(id, con){
+monitorRating = function(id, con){
   var interv = setInterval(function(){
     request({
           url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
