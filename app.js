@@ -80,18 +80,21 @@ function receivedMessage(event) {
             var messageText = message.text;
             var messageAttachments = message.attachments;
 
-            if(messageText.length>8){
-              if(messageText.substring(0,8)=='handle: '){
-                //check for correctness of handle
-                var handle = messageText.slice(8);
-               request({
-                    url: 'http://codeforces.com/api/user.info?handles='+handle,
-                    method: 'GET',
-                    // json: {
-                    //   recipient: {id:sender},
-                    //   message: messageData,
-                    // }
-                  }, function(error, response, body) {
+            if(messageText.length>5){
+                if(messageText.substring(0,5)=='sub: '){
+                  // handle subscriptions
+                  return;
+                }
+
+              if(messageText.length>8){
+                if(messageText.substring(0,8)=='handle: '){
+                  //check for correctness of handle
+                   var handle = messageText.slice(8);
+                   request({
+                      url: 'http://codeforces.com/api/user.info?handles='+handle,
+                      method: 'GET',
+                    
+                     }, function(error, response, body) {
 
                     if (error) {
                       console.log('Error sending messages: ', error)
@@ -112,7 +115,7 @@ function receivedMessage(event) {
                             console.log(err);
                           else
                             console.log('handle updated');
-                      //----------------------------------------start handling the subscription phase
+                      
                           sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
                           
                           
@@ -125,6 +128,7 @@ function receivedMessage(event) {
             }
           }
         }
+      }
       }
     });
 }
