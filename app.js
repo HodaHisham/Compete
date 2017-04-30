@@ -101,7 +101,7 @@ function receivedMessage(event) {
                       console.log('User created!');
                       sendTextMessage(senderID,'Subscribed Successfully');
                     }
-                    }
+                    
                    });
                   return;
                 }
