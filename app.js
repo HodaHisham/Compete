@@ -3,7 +3,7 @@ var User    = require('./models/users');
 var http    = require('http');
 var request = require('request');
 var router  = express.Router();
-var Contest = require(./models/contests);
+var Contest = require('./models/contests');
 var called = false;
 
 router.get('/', function(req, res) {
@@ -17,23 +17,22 @@ router.get('/', function(req, res) {
     called = true;
     }
   } else {
-    console.error("Failed validation. Make sure the validation tokens match.");
+    console.error('Failed validation. Make sure the validation tokens match.');
     res.sendStatus(403);
   }
 });
 
 
-router.post('/', function (req, res) {
+router.post('/', function(req, res) {
   console.log("entered post of webhook");
   var data = req.body;
-  if(!called){
+  if(!called) {
     getContests(true);
     getContests(false);
     called = true;
   }
   // Make sure this is a page subscription
   if (data.object === 'page') {
-
     // Iterate over each entry - there may be multiple if batched
     data.entry.forEach(function(entry) {
       var pageID = entry.id;
@@ -42,15 +41,14 @@ router.post('/', function (req, res) {
       // Iterate over each messaging event
       entry.messaging.forEach(function(event) {
         if (event.message) {
-              console.log("entered event message");
+              console.log('entered event message');
 
           receivedMessage(event);
         } else {
-          console.log("Webhook received unknown event: ", event);
+          console.log('Webhook received unknown event: ', event);
         }
       });
     });
-
 
     res.sendStatus(200);
   }
@@ -62,18 +60,16 @@ function receivedMessage(event) {
   var timeOfMessage = event.timestamp;
   var message = event.message;
 
-  User.findOne({ fbId : senderID } , function(err, user) {
+  User.findOne({fbId: senderID}, function(err, user) {
 
 
             if (err)
                 console.log(err);
-            else
-            {
-              if(!user){
-
+            else {
+              if(!user) {
                 var user = new User();
                 user.fbId= senderID;
-                user.save(function(err) {
+                user.save(function(err){
 
 
                   if (err)
@@ -82,43 +78,38 @@ function receivedMessage(event) {
                       console.log('User created!');
               });
 
-                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
-              }
-              else{
+                sendTextMessage(senderID, 'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+              } else{
                 //handle user messages
                 var messageId = message.mid;
-            var messageText = message.text;
-            var messageAttachments = message.attachments;
+                var messageText = message.text;
+                var messageAttachments = message.attachments;
 
-            if(messageText.length>5){
-                if(messageText.substring(0,5)=='sub: '){
+            if(messageText.length > 5) {
+                if(messageText.substring(0, 5)=='sub: ') {
                   // handle subscriptions
                   return;
                 }
 
-              if(messageText.length>8){
-                if(messageText.substring(0,8)=='handle: '){
-                  //check for correctness of handle
+              if(messageText.length>8) {
+                if(messageText.substring(0, 8)=='handle: ') {
+                  // check for correctness of handle
                    var handle = messageText.slice(8);
                    request({
                       url: 'http://codeforces.com/api/user.info?handles='+handle,
                       method: 'GET',
 
-                     }, function(error, response, body) {
-
+                    }, function(error, response, body){
                     if (error) {
                       console.log('Error sending messages: ', error)
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error)
-                    }
-                    else{
-
+                    } else {
                       obj = JSON.parse(body);
                       if(obj.status === 'FAILED'){
                       sendTextMessage(senderID, 'Handle does not exist. Please try again');
                       return;
-                    }
-                    else {
+                    } else {
                       user.cfHandle = handle;
                       user.save(function(err) {
                          if (err)
@@ -156,27 +147,27 @@ function receivedMessage(event) {
 function callSendAPI(messageData) {
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: { access_token: process.env.PAGE_ACCESS_TOKEN },
+    qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
     method: 'POST',
     json: messageData
 
-  }, function (error, response, body) {
+  }, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       var recipientId = body.recipient_id;
       var messageId = body.message_id;
 
-      console.log("Successfully sent generic message with id %s to recipient %s",
+      console.log('Successfully sent generic message with id %s to recipient %s',
         messageId, recipientId);
     } else {
-      console.error("Unable to send message.");
+      console.error('Unable to send message.');
       console.error(response);
       console.error(error);
     }
   });
 }
 
-getContests = function(gym){
-  setInterval(function(){
+getContests = function(gym) {
+  setInterval(function() {
     // Assign the HTTP request host/path
       request({
          url: 'http://codeforces.com/api/contest.list?gym='+gym,
@@ -186,22 +177,19 @@ getContests = function(gym){
              console.log('Error sending messages: ', error)
            } else if (response.body.error) {
              console.log('Error: ', response.body.error)
-           }
-           else{
+           } else{
              obj = JSON.parse(body);
-             if(obj.status === 'OK'){
+             if(obj.status === 'OK') {
                var array = obj.result;
                var len = array.length, i;
-               for(i = 0; i < len; i++)
-               {
+               for(i = 0; i < len; i++) {
                  var item = JSON.parse(array[i]);
-                 Contest.findOne({ conId : item.id } , function(err, con) {
-                  if(err)
-                  {
+                 Contest.findOne({conId: item.id}, function(err, con) {
+                  if(err) {
                     con = new Contest();
                     con.conId = item.id;
-                    con.div1 = item.name.indexOf("div1") != -1;
-                    con.div2 = item.name.indexOf("div2") != -1;
+                    con.div1 = item.name.indexOf('div1') != -1;
+                    con.div2 = item.name.indexOf('div2') != -1;
                     con.gym = gym;
                     con.rem24H = false;
                     con.rem1H = false;
@@ -211,45 +199,45 @@ getContests = function(gym){
                   }
                   User.find().forEach(function(err, user) {
                     if(user.gym && con.gym)
-                     sendTextMessage(user.fbId,'A new gym contest is announced! ' + item.name + ' will take place after '
+                     sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after '
                      + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-                     (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+                     (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
                      );
                    else if(user.div1 && con.div1)
-                    sendTextMessage(user.fbId,'A new div1 contest is announced! ' + item.name + ' will take place after '
+                    sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after '
                     + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-                    (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+                    (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
                     );
                    else if(user.div2 && con.div2)
-                    sendTextMessage(user.fbId,'A new div2 contest is announced! ' + item.name + ' will take place after '
+                    sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after '
                     + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-                    (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+                    (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
                     );
-                   if(!con.rem24H && item.relativeTimeSeconds >= -86400000){
+                   if(!con.rem24H && item.relativeTimeSeconds >= -86400000) {
                       con.rem24H = true;
                       sendTextMessage(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
                     }
-                   if(!con.rem1H && item.relativeTimeSeconds >= -3600000){
+                   if(!con.rem1H && item.relativeTimeSeconds >= -3600000) {
                       con.rem1H = true;
                       sendTextMessage(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
                     }
-                   if(!con.sysTestSt && item.phase === 'SYSTEM_TEST'){
+                   if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
                       con.sysTestSt = true;
                       sendTextMessage(user.fbId, 'System Testing for ' + con.name + ' has started!');
                     }
-                    if(!con.sysTestEnd && item.phase === 'FINISHED'){
+                    if(!con.sysTestEnd && item.phase === 'FINISHED') {
                        con.sysTestEnd = true;
                        monitorRating(item.id, con);
                        sendTextMessage(user.fbId, 'System Testing for ' + con.name + ' has ended!');
                      }
-                  }
+                  });
                   con.save(function(err) {
                       if (err)
                           console.log(err);
                       else
-                          console.log({ message: 'Contest updated/created!' });
+                          console.log({message: 'Contest updated/created!'});
                   });
-             }
+              });
            }
          }
        }
@@ -258,8 +246,8 @@ getContests = function(gym){
 };
 
 
-monitorRating = function(id, con){
-  var interv = setInterval(function(){
+monitorRating = function(id, con) {
+  var interv = setInterval(function() {
     request({
           url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
           method: 'GET'
@@ -268,23 +256,23 @@ monitorRating = function(id, con){
             console.log('Error sending messages: ', error)
           } else if (response.body.error) {
             console.log('Error: ', response.body.error)
-          }
-          else {
+          } else {
             obj = JSON.parse(body);
             if(obj.status === 'FAILED') {
-            console.log('Rating changes are not available',error);
-            }
-            else {
+            console.log('Rating changes are not available', error);
+            } else {
                 var array = obj.result;
                 var len = array.length, i;
                 for(i = 0; i < len; i++) {
                   var item = JSON.parse(array[i]);
-                  User.findOne({ cfHandle : item.handle } , function(err, user) {
-                   if(!err){
-                     sendTextMessage(user.fbId, item.newRating > item.oldRating?'Congrats! You earned ' + (item.newRating - item.oldRating) + ' rating points')
-                     :'You lost '+ (item.oldRating - item.newRating) + 'points! I know you can do it next time! Keep up the hard work :D');
+                  User.findOne({cfHandle: item.handle}, function(err, user) {
+                   if(!err) {
+                     sendTextMessage(user.fbId, item.newRating > item.oldRating?
+                      'Congrats! You earned ' + (item.newRating - item.oldRating)
+                      + ' rating points':'You lost '+ (item.oldRating - item.newRating)
+                      + 'points! I know you can do it next time! Keep up the hard work :D');
                    }
-                 }
+                 });
                }
               clearInterval(interv);
               con.ratingCh = true;
@@ -292,6 +280,6 @@ monitorRating = function(id, con){
         }
     });
   }, 60000);
-}
+};
 
 module.exports = router;
