@@ -113,7 +113,7 @@ function receivedMessage(event) {
                           else
                             console.log('handle updated');
                       //----------------------------------------start handling the subscription phase
-                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub:\ndiv1 div2 gym\n');
+                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
                           
                           
 
