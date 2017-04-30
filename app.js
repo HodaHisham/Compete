@@ -84,12 +84,16 @@ function receivedMessage(event) {
                     //   message: messageData,
                     // }
                   }, function(error, response, body) {
+
                     if (error) {
                       console.log('Error sending messages: ', error)
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error)
                     }
-                    else if(response.body.status==='FAILED'){
+                    else{ 
+
+                      obj = JSON.parse(body);
+                      if(obj.status==='FAILED'){
                       sendTextMessage(senderID, 'Handle does not exist. Please try again');
                       return;
                     }
@@ -103,6 +107,8 @@ function receivedMessage(event) {
                       //----------------------------------------start handling the subscription phase
               });
                     }
+
+                  }
               });
             }
           }

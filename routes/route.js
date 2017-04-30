@@ -8,7 +8,7 @@ router.get('/', function(req, res){
   res.json({ message: 'hooray! welcome to our api!' });
 });
 
-
+// just for testing
 router.get('/cf/:handle/', function(req, res) {
       
       request({
@@ -19,20 +19,25 @@ router.get('/cf/:handle/', function(req, res) {
                     //   message: messageData,
                     // }
                   }, function(error, response, body) {
+                    
                     if (error) {
                       console.log('Error sending messages: ', error)
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error)
                     }
-                    else if(response.status==='FAILED'){
+
+                    else {
+                      obj = JSON.parse(body);
+                      if(obj.status==='FAILED'){
                       console.log('Handle does not exist. Please try again',error);
                       return;
                     }
                     else {
-                      res.json(body);
-                      console.log(response.status,error);
+                      
+                      console.log(obj.status,error);
 
                     }
+                  }
               });
 });
 
