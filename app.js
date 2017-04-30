@@ -113,9 +113,9 @@ function receivedMessage(event) {
                           else
                             console.log('handle updated');
                       //----------------------------------------start handling the subscription phase
-                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\n');
-                          sendTextMessage(senderID, 'To subscribe copy and paste the next message and remove unwanted subscriptions');
-                          sendTextMessage(senderID,'sub:\n rated unrated\n  ')
+                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub:\ndiv1 div2 gym\n');
+                          
+                          
 
                       });
                     }
