@@ -4,6 +4,7 @@ var router  = express.Router();
 var app     = express();
 var http    = require('http');
 var request = require('request');
+module.exports = router;
 
 app.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
@@ -76,7 +77,7 @@ function receivedMessage(event) {
                 //check for correctness of handle
                 
                request({
-                    url: 'codeforces.com/api/user.info?handles='+handle,
+                    url: 'http://codeforces.com/api/user.info?handles='+handle,
                     method: 'GET',
                     // json: {
                     //   recipient: {id:sender},
