@@ -81,9 +81,9 @@ function receivedMessage(event) {
             var messageAttachments = message.attachments;
 
             if(messageText.length>8){
-              if(messageText.substring(0,8).equals('handle: ')){
+              if(messageText.substring(0,8)=='handle: '){
                 //check for correctness of handle
-                var handle = messageText.substring(8);
+                var handle = messageText.slice(8);
                request({
                     url: 'http://codeforces.com/api/user.info?handles='+handle,
                     method: 'GET',
