@@ -99,7 +99,31 @@ function receivedMessage(event) {
                       console.log(err);
                     else{
                       console.log('User created!');
-                      sendTextMessage(senderID,'Subscribed Successfully');
+                      sendTextMessage(senderID,'Subscribed Successfully\nto unsubscribe any of them use the same message but with unsub:');
+                    }
+                    
+                   });
+                  return;
+                }
+                if(messageText.substring(0,7)=='unsub: '){
+                  if(messageText.indexOf('div1') !== -1){
+                      user.div1= false;
+                  }
+                  if(messageText.indexOf('div2') !== -1){
+                      user.div2= false;
+                  }
+
+                  if(messageText.indexOf('gym') !== -1){
+                      user.gym= false;
+                  }
+                  user.save(function(err) {
+                                                 
+
+                    if (err)
+                      console.log(err);
+                    else{
+                      console.log('User created!');
+                      sendTextMessage(senderID,'Unsubscribed Successfully');
                     }
                     
                    });
