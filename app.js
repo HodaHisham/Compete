@@ -36,9 +36,10 @@ router.post('/', function (req, res) {
 
           receivedMessage(event);
         }
-        else if (event.postback) 
+        else if (event.postback) {
               console.log("entered event postback")
               recievedPostback(event);
+            }
 
 
         else {
@@ -63,17 +64,17 @@ function receivedPostback(event){
   if(payload =='startButton'){
 
     var user = new User();
-                user.fbId= senderID;
-                user.save(function(err) {
+    user.fbId= senderID;
+    user.save(function(err) {
                                                  
 
-                  if (err)
-                      console.log(err);
-                   else
-                      console.log('User created!');
+    if (err)
+         console.log(err);
+    else
+        console.log('User created!');
               });
 
-                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+    sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
   }
 
 
