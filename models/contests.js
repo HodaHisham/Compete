@@ -13,8 +13,7 @@ var ContSchema = new Schema({
     rem1H: Boolean,
     sysTestEnd: Boolean,
     sysTestSt: Boolean,
-    ratingCh: Boolean,
-    announced: Boolean
-});
+    ratingCh: Boolean
+  });
 
 module.exports = mongoose.model('Contest', ContSchema);

@@ -52,7 +52,7 @@ router.post('/user', function(req, res) {
 });
 
 router.get('/user', function(req, res) {
-  Contest.find(function(err, users) {
+  User.find(function(err, users) {
       if (err)
           res.send(err);
       else
@@ -120,146 +120,154 @@ router.get('/contests/:gym', function(req, res) {
            } else{
              obj = JSON.parse(body);
              if(obj.status === 'OK') {
-               processContest(obj.result, 0, gym);
+               Contest.count({}, function( err, count) {
+                 processContest(obj.result, 0, gym, count !== 0);
+               });
              }
        }
     });
   }, 60000*3);
 });
 
-function processContest(array, ind, gym) {
+function processContest(array, ind, gym, ann) {
   if(ind == array.length)
     return;
   var item = array[ind];
   if(!item)
     return;
-  var ann = false, rem24 = false, rem1 = false, systS = false, systE = false;
   // console.log(item);
-  Contest.findOne({conId: item.id}, function(err, con) {
-   if(err || !con) {
-    //  console.log('ann: ' + ann);
-    //  console.log('gym: ' + gym);
-     con = new Contest();
-     con.announced = false;
-   }
-   con.conId = item.id;
-   con.div1 = item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1? true:false;
-   con.div2 = item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1? true:false;
-   con.gym = gym;
-   if(!con.div1 && !con.div2 && !gym) {
-     con.div1 = true;
-     con.div2 = true;
-   }
-   con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
-   con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
-   con.sysTestSt = false;
-   con.sysTestEnd = false;
-   con.ratingCh = false;
-   console.log(con);
-   console.log(item.relativeTimeSeconds);
-   var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-   Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-   if(!con.announced) {
-     con.announced = true;
-     ann = true;
-   }
-   if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
-      rem1 = true;
-      con.rem1H = true;
-      // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
-    } else if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
-       rem24 = true;
-       con.rem24H = true;
-       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
-    }
-    if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
-      systS = true;
-      con.sysTestSt = true;
-      // console.log(user.fbId, 'System Testing for ' + con.name + ' has started!');
-    }
-    if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
-      systE = true;
-       con.sysTestEnd = true;
-       if(!gym)
-        monitorRating(item.id, con);
-      //  console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
-    }
-    con.save(function(err) {
-        // if (err)
-        //     console.log(err);
-        // else
-        //     console.log({message: 'Contest updated/created!'});
-    });
-    User.find({}).cursor().on('data', function(user) {
-     if(!user)
-       return;
-     console.log(user);
-     var interested = false;
-     console.log(user.div1);
-     console.log(con.div1);
-     if(ann) {
-       if(user.gym && con.gym) {
-          interested = true;
-          console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-        } else if(user.div1 && con.div1) {
-           interested = true;
-           console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-        } else if(user.div2 && con.div2) {
-           interested = true;
-           console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-        }
+    Contest.findOne({conId: item.id}, function(err, con) {
+     if(err || !con) {
+      //  console.log('ann: ' + ann);
+      //  console.log('gym: ' + gym);
+      con = new Contest();
+      var categorySpecified = false;
+      con.conId = item.id;
+      con.div1 = (categorySpecified |= (item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1));
+      con.div2 = (categorySpecified |= (item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1));
+      con.gym = (categorySpecified |= gym);
+      if(!categorySpecified) {
+        con.div1 = true;
+        con.div2 = true;
       }
-      if(interested) {
-        if(rem24)
-          console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
-        if(rem1)
-          console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
-        if(systS)
-          console.log(user.fbId, 'System Testing for ' + item.name + ' has started!');
-        if(systE)
-          console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
+      con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
+      con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
+      con.sysTestSt = false;
+      con.sysTestEnd = false;
+      con.ratingCh = false;
+     } else ann = false;
+     console.log(con);
+    //  console.log(Math.floor(-item.relativeTimeSeconds / 86400));
+     var rem24 = false, rem1 = false, systS = false, systE = false;
+     var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
+     Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+     if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
+        rem1 = true;
+        con.rem1H = true;
+        console.log('Reminder: ' + item.name + ' will take place in 1 hour');
+      } else if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
+         rem24 = true;
+         con.rem24H = true;
+         console.log('Reminder: ' + item.name + ' will take place in 24 hours');
       }
-      console.log(con);
-   }).on('end', function() {
-     processContest(array, ind+1, gym);
-   });
- });
-}
+      if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
+        systS = true;
+        con.sysTestSt = true;
+        console.log('System Testing for ' + item.name + ' has started!');
+      }
+      if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
+        systE = true;
+         con.sysTestEnd = true;
+         if(!gym)
+          monitorRating(item.id, con);
+         console.log('System Testing for ' + item.name + ' has ended!');
+      }
+      con.save(function(err) {
+            // if (err)
+            //     console.log(err);
+            // else
+            //     console.log({message: 'Contest updated/created!'});
+        if(ann) {
+        User.find({}).cursor().on('data', function(user) {
+         if(!user)
+           return;
+        //  console.log(user);
+         var interested = false;
+         if(user.gym && con.gym) {
+            interested = true;
+            console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+          } else if(user.div1 && con.div1) {
+             interested = true;
+             console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+          } else if(user.div2 && con.div2) {
+             interested = true;
+             console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+          }
+          console.log('interested ' + interested);
+          if(interested) {
+            if(rem24)
+              console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
+            if(rem1)
+              console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
+            if(systS)
+              console.log(user.fbId, 'System Testing for ' + item.name + ' has started!');
+            if(systE)
+              console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
+          }
+          // console.log(con);
+         }).on('end', function() {
+           processContest(array, ind+1, gym, ann);
+         });
+       } else
+        processContest(array, ind+1, gym, ann);
+      });
+     });
+ }
 
-function monitorRating(id, con) {
-  var interv = setInterval(function() {
-    request({
-          url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
-          method: 'GET'
-        }, function(error, response, body) {
-          if (error) {
-            console.log('Error sending messages: ', error)
-          } else if (response.body.error) {
-            console.log('Error: ', response.body.error)
-          } else {
-            obj = JSON.parse(body);
-            if(obj.status === 'FAILED') {
-            console.log('Rating changes are not available', error);
+  function monitorRating(id, con) {
+    var interv = setInterval(function() {
+      request({
+            url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+            method: 'GET'
+          }, function(error, response, body) {
+            if (error) {
+              console.log('Error sending messages: ', error)
+            } else if (response.body.error) {
+              console.log('Error: ', response.body.error)
             } else {
-                var array = obj.result;
-                var len = array.length, i;
-                for(i = 0; i < len; i++) {
-                  var item = array[i];
-                  User.findOne({cfHandle: item.handle}, function(err, user) {
-                   if(!err) {
-                     console.log(user.fbId, item.newRating > item.oldRating?
-                      'Congrats! You earned ' + (item.newRating - item.oldRating)
-                      + ' rating points':'You lost '+ (item.oldRating - item.newRating)
-                      + ' points! I know you can do it next time! Keep up the hard work :D');
-                   }
-                 });
-               }
-              clearInterval(interv);
-              con.ratingCh = true;
-            }
-        }
-    });
-  }, 60000*3);
+              obj = JSON.parse(body);
+              if(obj.status === 'FAILED') {
+                console.log('Rating changes are not available', error);
+              } else {
+                  var array = obj.result;
+                  handleRating(array, 0, con);
+              }
+          }
+      });
+    }, 60000*3);
 };
 
+function handleRating(array, ind, con) {
+  if(ind == array.length) {
+    clearInterval(interv);
+    con.ratingCh = true;
+    con.save(function(err) {
+          // if (err)
+          //     console.log(err);
+          // else
+          //     console.log({message: 'Contest updated/created!'});
+    });
+    return;
+  }
+  var item = array[ind];
+  User.findOne({cfHandle: item.handle}, function(err, user) {
+   if(!err && !user) {
+     console.log(user.fbId, item.newRating > item.oldRating?
+      'Congrats! You earned ' + (item.newRating - item.oldRating)
+      + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
+      + ' points! in ' + item.contestName + ' . I know you can do it next time! Keep up the hard work :D');
+   }
+   handleRating(array, ind+1, con);
+ });
+}
 module.exports = router;
