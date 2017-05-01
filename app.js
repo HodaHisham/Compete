@@ -38,7 +38,7 @@ router.post('/', function (req, res) {
         }
         else if (event.postback) {
               console.log("entered event postback")
-              recievedPostback(event);
+              receivedPostback(event);
             }
 
 
