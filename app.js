@@ -84,7 +84,7 @@ function receivedMessage(event) {
                 var messageAttachments = message.attachments;
 
             if(messageText.length>5) {
-                if(messageText.substring(0,5)=='sub: ') {
+                if(messageText.substring(0, 5)=='sub: ') {
                   if(messageText.indexOf('div1') !== -1) {
                       user.div1= true;
                   }
@@ -105,8 +105,8 @@ function receivedMessage(event) {
                    });
                   return;
                 }
-                if(messageText.substring(0,7) =='unsub: ') {
-                  if(messageText.indexOf('div1') !== -1){
+                if(messageText.substring(0, 7) =='unsub: ') {
+                  if(messageText.indexOf('div1') !== -1) {
                       user.div1= false;
                   }
                   if(messageText.indexOf('div2') !== -1) {
@@ -126,7 +126,7 @@ function receivedMessage(event) {
                   return;
                 }
 
-              if(messageText.length>8) {
+              if(messageText.length > 8) {
                 if(messageText.substring(0, 8) =='handle: ') {
                   // check for correctness of handle
                    var handle = messageText.slice(8);

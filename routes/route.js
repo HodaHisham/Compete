@@ -109,7 +109,8 @@ router.get('/contests/:gym', function(req, res) {
     // Assign the HTTP request host/path
     var gym = req.params.gym;
       request({
-         url: 'http://codeforces.com/api/contest.list?gym='+gym,
+        //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
+         url: 'https://sheltered-reef-68226.herokuapp.com/',
          method: 'GET',
         }, function(error, response, body) {
            if (error) {
@@ -142,15 +143,15 @@ function processContest(array, ind, gym) {
      con = new Contest();
    }
    con.conId = item.id;
-   con.div1 = item.name.indexOf('div1') !== -1;
-   con.div2 = item.name.indexOf('div2') !== -1;
+   con.div1 = item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1? true:false;
+   con.div2 = item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1? true:false;
    con.gym = gym;
    if(!con.div1 && !con.div2 && !gym) {
      con.div1 = true;
      con.div2 = true;
    }
-   con.rem24H = false;
-   con.rem1H = false;
+   con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
+   con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
    con.sysTestSt = false;
    con.sysTestEnd = false;
    con.ratingCh = false;
@@ -158,7 +159,7 @@ function processContest(array, ind, gym) {
    console.log(item.relativeTimeSeconds);
    var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
    Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-   if(!con.rem24H && item.relativeTimeSeconds >= -86400 && item.relativeTimeSeconds < 0) {
+   if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
       rem24 = true;
       con.rem24H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
@@ -180,6 +181,12 @@ function processContest(array, ind, gym) {
         monitorRating(item.id, con);
       //  console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
     }
+    con.save(function(err) {
+        if (err)
+            console.log(err);
+        else
+            console.log({message: 'Contest updated/created!'});
+    });
     User.find({}).cursor().on('data', function(user) {
      if(!user)
        return;
@@ -211,12 +218,6 @@ function processContest(array, ind, gym) {
           console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
       }
       console.log(con);
-      con.save(function(err) {
-          if (err)
-              console.log(err);
-          else
-              console.log({message: 'Contest updated/created!'});
-      });
    }).on('end', function() {
      processContest(array, ind+1, gym);
    });
