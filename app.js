@@ -105,10 +105,11 @@ function receivedPostback(event){
 
 
     
+          }
+
+
+      });
   }
-
-
-});
 }
 
 function receivedMessage(event) {
