@@ -120,51 +120,51 @@ function receivedMessage(event) {
                   handleSubscriptions(user, messageText, true);
                   return;
                 }
-                else
-                if(messageText.length>7){
-                if(messageText.substring(0,7)=='unsub: '){
-                  handleSubscriptions(user,messageText, false);
-                  return;
-                }
-              }
-              else
-              if(messageText.length>8){
-                console.log('entered handling handles');
-                if(messageText.substring(0,8)=='handle: '){
-                  //check for correctness of handle
-                   var handle = messageText.slice(8);
-                   request({
-                      url: 'http://codeforces.com/api/user.info?handles='+handle,
-                      method: 'GET',
+                else 
+                  if(messageText.length>7)
+                    if(messageText.substring(0,7)=='unsub: '){
+                        handleSubscriptions(user,messageText, false);
+                          return;
+                      }
+              
+                    else
+                      if(messageText.length>8){
+                          console.log('entered handling handles');
+                          if(messageText.substring(0,8)=='handle: '){
+                              //check for correctness of handle
+                              var handle = messageText.slice(8);
+                              request({
+                                url: 'http://codeforces.com/api/user.info?handles='+handle,
+                                method: 'GET',
                     
-                     }, function(error, response, body) {
+                              }, function(error, response, body) {
 
-                    if (error) {
-                      console.log('Error sending messages: ', error)
-                    } else if (response.body.error) {
-                      console.log('Error: ', response.body.error)
-                    }
-                    else{ 
+                              if (error) {
+                                console.log('Error sending messages: ', error)
+                              } else if (response.body.error) {
+                                console.log('Error: ', response.body.error)
+                              }
+                              else{ 
 
-                      obj = JSON.parse(body);
-                      if(obj.status === 'FAILED'){
-                      sendTextMessage(senderID, 'Handle does not exist. Please try again');
-                      return;
-                    }
-                    else {
-                      user.cfHandle = handle;
-                      user.save(function(err) {
-                         if (err)
-                            console.log(err);
-                          else
-                            console.log('handle updated');
-                      
-                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
-                          
-                          
+                                obj = JSON.parse(body);
+                                if(obj.status === 'FAILED'){
+                                sendTextMessage(senderID, 'Handle does not exist. Please try again');
+                                return;
+                              }
+                              else {
+                                user.cfHandle = handle;
+                                user.save(function(err) {
+                                   if (err)
+                                      console.log(err);
+                                    else
+                                      console.log('handle updated');
+                                
+                                    sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
+                                    
+                                    
 
-                      });
-                    }
+                                });
+                              }
 
                   }
               });
