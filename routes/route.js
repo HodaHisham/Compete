@@ -117,7 +117,7 @@ router.get('/contests/:gym', function(req, res) {
                var array = obj.result;
                var len = array.length, i;
                for(i = 0; i < len; i++) {
-                 var item = JSON.parse(array[i]);
+                 var item = array[i];
                  console.log(item);
                  Contest.findOne({conId: item.id}, function(err, con) {
                   if(err) {
@@ -132,7 +132,7 @@ router.get('/contests/:gym', function(req, res) {
                     con.sysTestEnd = false;
                     con.ratingCh = false;
                   }
-                  User.find().forEach(function(err, user) {
+                  User.find({}).forEach(function(err, user) {
                     if(user.gym && con.gym)
                       console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after '
                      + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
@@ -199,7 +199,7 @@ function monitorRating(id, con) {
                 var array = obj.result;
                 var len = array.length, i;
                 for(i = 0; i < len; i++) {
-                  var item = JSON.parse(array[i]);
+                  var item = array[i];
                   User.findOne({cfHandle: item.handle}, function(err, user) {
                    if(!err) {
                      console.log(user.fbId, item.newRating > item.oldRating?

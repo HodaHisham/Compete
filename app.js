@@ -199,7 +199,7 @@ getContests = function(gym) {
                     con.sysTestEnd = false;
                     con.ratingCh = false;
                   }
-                  User.find().forEach(function(err, user) {
+                  User.find({}).forEach(function(err, user) {
                     if(user.gym && con.gym)
                      sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after '
                      + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +

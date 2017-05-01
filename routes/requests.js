@@ -21,7 +21,7 @@
 //                var len = array.length, i;
 //                for(i = 0; i < len; i++)
 //                {
-//                  var item = JSON.parse(array[i]);
+//                  var item = array[i]);
 //                  Contest.findOne({ conId : item.id } , function(err, con) {
 //                   if(err)
 //                   {
@@ -36,7 +36,7 @@
 //                     con.sysTestEnd = false;
 //                     con.ratingCh = false;
 //                   }
-//                   User.find().forEach(function(err, user) {
+//                   User.find({}).forEach(function(err, user) {
 //                    if(user.div1 && con.div1)
 // sendTextMessage(user.fbId,'A new div1 contest is announced!
  // ' + item.name + ' will take place after '
