@@ -9,9 +9,9 @@ var called = false;
 router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
-    console.log("Validating webhook");
+    console.log('Validating webhook');
     res.status(200).send(req.query['hub.challenge']);
-    if(!called){
+    if(!called) {
     getContests(true);
     getContests(false);
     called = true;
@@ -24,7 +24,7 @@ router.get('/', function(req, res) {
 
 
 router.post('/', function(req, res) {
-  console.log("entered post of webhook");
+  console.log('entered post of webhook');
   var data = req.body;
   console.log(called);
   if(!called) {
@@ -34,6 +34,7 @@ router.post('/', function(req, res) {
     getContests(false);
     called = true;
   }
+  res.sendStatus(200);
   // Make sure this is a page subscription
   if (data.object === 'page') {
     // Iterate over each entry - there may be multiple if batched
@@ -52,8 +53,6 @@ router.post('/', function(req, res) {
         }
       });
     });
-
-    res.sendStatus(200);
   }
 });
 
@@ -64,8 +63,6 @@ function receivedMessage(event) {
   var message = event.message;
 
   User.findOne({fbId: senderID}, function(err, user) {
-
-
             if (err)
                 console.log(err);
             else {
@@ -100,14 +97,14 @@ function receivedMessage(event) {
                       url: 'http://codeforces.com/api/user.info?handles='+handle,
                       method: 'GET',
 
-                    }, function(error, response, body){
+                    }, function(error, response, body) {
                     if (error) {
                       console.log('Error sending messages: ', error)
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error)
                     } else {
                       obj = JSON.parse(body);
-                      if(obj.status === 'FAILED'){
+                      if(obj.status === 'FAILED') {
                       sendTextMessage(senderID, 'Handle does not exist. Please try again');
                       return;
                     } else {
@@ -118,10 +115,9 @@ function receivedMessage(event) {
                           else
                             console.log('handle updated');
 
-                          sendTextMessage(senderID,'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
+                          sendTextMessage(senderID, 'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
                       });
                     }
-
                   }
               });
             }
@@ -167,7 +163,7 @@ function callSendAPI(messageData) {
   });
 }
 
-getContests = function(gym) {
+function getContests(gym) {
   setInterval(function() {
     // Assign the HTTP request host/path
       request({
@@ -185,9 +181,10 @@ getContests = function(gym) {
                var len = array.length, i;
                for(i = 0; i < len; i++) {
                  var item = array[i];
-                 console.log(item);
+                 var ann = false;
                  Contest.findOne({conId: item.id}, function(err, con) {
                   if(err) {
+                    ann = true;
                     con = new Contest();
                     con.conId = item.id;
                     con.div1 = item.name.indexOf('div1') != -1;
@@ -199,18 +196,18 @@ getContests = function(gym) {
                     con.sysTestEnd = false;
                     con.ratingCh = false;
                   }
-                  User.find({}).forEach(function(err, user) {
-                    if(user.gym && con.gym)
+                  User.find({}).stream().on('data', function(user) {
+                    if(ann && user.gym && con.gym)
                      sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after '
                      + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
                      (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
                      );
-                   else if(user.div1 && con.div1)
+                   else if(ann && user.div1 && con.div1)
                     sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after '
                     + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
                     (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
                     );
-                   else if(user.div2 && con.div2)
+                   else if(ann & user.div2 && con.div2)
                     sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after '
                     + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
                     (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
@@ -227,7 +224,7 @@ getContests = function(gym) {
                       con.sysTestSt = true;
                       sendTextMessage(user.fbId, 'System Testing for ' + con.name + ' has started!');
                     }
-                    if(!con.sysTestEnd && item.phase === 'FINISHED') {
+                    if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
                        con.sysTestEnd = true;
                        monitorRating(item.id, con);
                        sendTextMessage(user.fbId, 'System Testing for ' + con.name + ' has ended!');
@@ -248,7 +245,7 @@ getContests = function(gym) {
 };
 
 
-monitorRating = function(id, con) {
+function monitorRating(id, con) {
   var interv = setInterval(function() {
     request({
           url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,

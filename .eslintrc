@@ -1,3 +1,7 @@
 {
-    "extends": "google"
+    "extends": "google",
+    "rules": {
+        "max-len": 0,
+        "no-var":0
+    }
 }
