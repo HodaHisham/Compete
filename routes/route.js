@@ -155,12 +155,14 @@ function processContest(array, ind, gym) {
      con.ratingCh = false;
      console.log(con);
    }
-   if(!con.rem24H && item.relativeTimeSeconds >= -86400000) {
+   var remainingTime = (-item.relativeTimeSeconds / 86400) + ' day(s) ' + ((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
+   (((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+   if(!con.rem24H && item.relativeTimeSeconds >= -86400) {
       rem24 = true;
       con.rem24H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
     }
-   if(!con.rem1H && item.relativeTimeSeconds >= -3600000) {
+   if(!con.rem1H && item.relativeTimeSeconds >= -3600) {
       rem1 = true;
       con.rem1H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
@@ -171,7 +173,7 @@ function processContest(array, ind, gym) {
       // console.log(user.fbId, 'System Testing for ' + con.name + ' has started!');
     }
     if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
-      sysE = true;
+      systE = true;
        con.sysTestEnd = true;
        monitorRating(item.id, con);
       //  console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
@@ -183,21 +185,15 @@ function processContest(array, ind, gym) {
      var interested = false;
      if(ann && user.gym && con.gym) {
         interested = true;
-        console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after '
-        + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-        (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
+        console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime
         );
       } else if(ann && user.div1 && con.div1) {
          interested = true;
-         console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after '
-         + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-         (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
+         console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime
          );
       } else if(ann & user.div2 && con.div2) {
          interested = true;
-         console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after '
-         + (item.relativeTimeSeconds / 86400) + ' day(s) ' + ((item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-         (((item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) '
+         console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime
          );
       }
       if(interested) {
@@ -205,10 +201,10 @@ function processContest(array, ind, gym) {
           console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
         if(rem1)
           console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
-        if(sysS)
-          console.log(user.fbId, 'System Testing for ' + con.name + ' has started!');
-        if(sysE)
-          console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
+        if(systS)
+          console.log(user.fbId, 'System Testing for ' + item.name + ' has started!');
+        if(systE)
+          console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
       }
       console.log(con);
       con.save(function(err) {
@@ -220,7 +216,7 @@ function processContest(array, ind, gym) {
    }).on('end', function() {
      processContest(array, ind+1);
    });
-});
+ });
 }
 function monitorRating(id, con) {
   var interv = setInterval(function() {
