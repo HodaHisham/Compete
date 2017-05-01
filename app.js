@@ -83,7 +83,7 @@ function receivedPostback(event){
                       console.log('User created!');
               });
 
-                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+                
               }
               else{
                 //user wants to begin from scratch
@@ -109,6 +109,7 @@ function receivedPostback(event){
 
 
       });
+    sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
   }
 }
 
