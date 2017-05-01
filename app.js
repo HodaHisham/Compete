@@ -116,56 +116,18 @@ function receivedMessage(event) {
 
             if(messageText.length>5){
                 if(messageText.substring(0,5)=='sub: '){
-                  if(messageText.indexOf('div1') !== -1){
-                      user.div1= true;
-                  }
-                  if(messageText.indexOf('div2') !== -1){
-                      user.div2= true;
-                  }
-
-                  if(messageText.indexOf('gym') !== -1){
-                      user.gym= true;
-                  }
-                  user.save(function(err) {
-                                                 
-
-                    if (err)
-                      console.log(err);
-                    else{
-                      console.log('User created!');
-                      sendTextMessage(senderID,'Subscribed Successfully\nto unsubscribe any of them use the same message but with unsub:');
-                    }
-                    
-                   });
+                  
+                  handleSubscriptions(user, messageText, true);
                   return;
                 }
+                else
                 if(messageText.length>7){
                 if(messageText.substring(0,7)=='unsub: '){
-                  if(messageText.indexOf('div1') !== -1){
-                      user.div1= false;
-                  }
-                  if(messageText.indexOf('div2') !== -1){
-                      user.div2= false;
-                  }
-
-                  if(messageText.indexOf('gym') !== -1){
-                      user.gym= false;
-                  }
-                  user.save(function(err) {
-                                                 
-
-                    if (err)
-                      console.log(err);
-                    else{
-                      console.log('User created!');
-                      sendTextMessage(senderID,'Unsubscribed Successfully');
-                    }
-                    
-                   });
+                  handleSubscriptions(user,messageText, false);
                   return;
                 }
               }
-
+              else
               if(messageText.length>8){
                 if(messageText.substring(0,8)=='handle: '){
                   //check for correctness of handle
@@ -207,11 +169,49 @@ function receivedMessage(event) {
               });
             }
           }
+          else 
+            handleWrongMessage(senderID,messageText);
         }
+        else
+          handleWrongMessage(senderID,messageText);
       }
       }
     });
 }
+
+  function handleWrongMessage(senderID, messageText){
+    sendTextMessage(senderID, 'Sorry I don\'t understand :(\nTo update your handle type handle: my_handle\n to subscribe write sub: div1 div2 gym\nto unsubscribe write unsub: div1 div2 gym\n');
+  }
+
+
+  function handleSubscriptions(user,messageText, sub) {
+
+    if(messageText.indexOf('div1') !== -1){
+                      user.div1= sub;
+                  }
+                  if(messageText.indexOf('div2') !== -1){
+                      user.div2= sub;
+                  }
+
+                  if(messageText.indexOf('gym') !== -1){
+                      user.gym= sub;
+                  }
+                  user.save(function(err) {
+                                                 
+
+                    if (err)
+                      console.log(err);
+                    else{
+                      if(sub)
+                        sendTextMessage(user.fbId,'Subscribed Successfully');
+                      else
+                        sendTextMessage(user.fbId,'Unsubscribed Successfully');
+                    }
+                    
+                   });
+
+  }
+
 
   function sendTextMessage(recipientId, messageText) {
   var messageData = {
