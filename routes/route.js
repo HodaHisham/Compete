@@ -155,8 +155,8 @@ function processContest(array, ind, gym) {
      con.ratingCh = false;
      console.log(con);
    }
-   var remainingTime = (-item.relativeTimeSeconds / 86400) + ' day(s) ' + ((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-   (((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+   var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
+   Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
    if(!con.rem24H && item.relativeTimeSeconds >= -86400) {
       rem24 = true;
       con.rem24H = true;
