@@ -225,9 +225,10 @@ function processContest(array, ind, gym, ann) {
  }
 
   function monitorRating(id, con) {
-    var interv = setInterval(function() {
+    setInterval(function() {
       request({
-            url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+            // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+            url: 'https://sheltered-reef-68226.herokuapp.com/rating',
             method: 'GET'
           }, function(error, response, body) {
             if (error) {
@@ -260,12 +261,13 @@ function handleRating(array, ind, con) {
     return;
   }
   var item = array[ind];
+  console.log(item);
   User.findOne({cfHandle: item.handle}, function(err, user) {
    if(!err && !user) {
      console.log(user.fbId, item.newRating > item.oldRating?
       'Congrats! You earned ' + (item.newRating - item.oldRating)
       + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
-      + ' points! in ' + item.contestName + ' . I know you can do it next time! Keep up the hard work :D');
+      + ' rating points in ' + item.contestName + '. I know you can do it next time! Keep up the hard work :D');
    }
    handleRating(array, ind+1, con);
  });
