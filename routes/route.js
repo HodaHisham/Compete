@@ -144,11 +144,11 @@ function processContest(array, ind, gym) {
    con.conId = item.id;
    con.div1 = item.name.indexOf('div1') !== -1;
    con.div2 = item.name.indexOf('div2') !== -1;
-   if(!con.div1 && !con.div2) {
+   con.gym = gym;
+   if(!con.div1 && !con.div2 && !gym) {
      con.div1 = true;
      con.div2 = true;
    }
-   con.gym = gym;
    con.rem24H = false;
    con.rem1H = false;
    con.sysTestSt = false;
@@ -158,12 +158,12 @@ function processContest(array, ind, gym) {
    console.log(item.relativeTimeSeconds);
    var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
    Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-   if(!con.rem24H && item.relativeTimeSeconds >= -86400) {
+   if(!con.rem24H && item.relativeTimeSeconds >= -86400 && item.relativeTimeSeconds < 0) {
       rem24 = true;
       con.rem24H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
     }
-   if(!con.rem1H && item.relativeTimeSeconds >= -3600) {
+   if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
       rem1 = true;
       con.rem1H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
@@ -185,18 +185,20 @@ function processContest(array, ind, gym) {
        return;
      console.log(user);
      var interested = false;
-     if(ann && user.gym && con.gym) {
-        interested = true;
-        console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime
-        );
-      } else if(ann && user.div1 && con.div1) {
-         interested = true;
-         console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime
-         );
-      } else if(ann & user.div2 && con.div2) {
-         interested = true;
-         console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime
-         );
+     if(ann) {
+       if(user.gym && con.gym) {
+          interested = true;
+          console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime
+          );
+        } else if(user.div1 && con.div1) {
+           interested = true;
+           console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime
+           );
+        } else if(user.div2 && con.div2) {
+           interested = true;
+           console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime
+           );
+        }
       }
       if(interested) {
         if(rem24)
