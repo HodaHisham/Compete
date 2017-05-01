@@ -129,6 +129,7 @@ function receivedMessage(event) {
               }
               else
               if(messageText.length>8){
+                console.log('entered handling handles');
                 if(messageText.substring(0,8)=='handle: '){
                   //check for correctness of handle
                    var handle = messageText.slice(8);
