@@ -123,7 +123,7 @@ router.get('/contests/:gym', function(req, res) {
              }
        }
     });
-  }, 60000);
+  }, 60000*3);
 });
 
 function processContest(array, ind, gym) {
@@ -140,21 +140,22 @@ function processContest(array, ind, gym) {
      console.log('ann: ' + ann);
      console.log('gym: ' + gym);
      con = new Contest();
-     con.conId = item.id;
-     con.div1 = item.name.indexOf('div1') != -1;
-     con.div2 = item.name.indexOf('div2') != -1;
-     if(!con.div1 && !con.div2) {
-       con.div1 = true;
-       con.div2 = true;
-     }
-     con.gym = gym;
-     con.rem24H = false;
-     con.rem1H = false;
-     con.sysTestSt = false;
-     con.sysTestEnd = false;
-     con.ratingCh = false;
-     console.log(con);
    }
+   con.conId = item.id;
+   con.div1 = item.name.indexOf('div1') !== -1;
+   con.div2 = item.name.indexOf('div2') !== -1;
+   if(!con.div1 && !con.div2) {
+     con.div1 = true;
+     con.div2 = true;
+   }
+   con.gym = gym;
+   con.rem24H = false;
+   con.rem1H = false;
+   con.sysTestSt = false;
+   con.sysTestEnd = false;
+   con.ratingCh = false;
+   console.log(con);
+   console.log(item.relativeTimeSeconds);
    var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
    Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
    if(!con.rem24H && item.relativeTimeSeconds >= -86400) {
@@ -175,7 +176,8 @@ function processContest(array, ind, gym) {
     if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
       systE = true;
        con.sysTestEnd = true;
-       monitorRating(item.id, con);
+       if(!gym)
+        monitorRating(item.id, con);
       //  console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
     }
     User.find({}).cursor().on('data', function(user) {
@@ -214,10 +216,11 @@ function processContest(array, ind, gym) {
               console.log({message: 'Contest updated/created!'});
       });
    }).on('end', function() {
-     processContest(array, ind+1);
+     processContest(array, ind+1, gym);
    });
  });
 }
+
 function monitorRating(id, con) {
   var interv = setInterval(function() {
     request({
@@ -251,7 +254,7 @@ function monitorRating(id, con) {
             }
         }
     });
-  }, 60000);
+  }, 60000*3);
 };
 
 module.exports = router;
