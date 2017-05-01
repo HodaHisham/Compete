@@ -184,7 +184,8 @@ getContests = function(gym) {
                var array = obj.result;
                var len = array.length, i;
                for(i = 0; i < len; i++) {
-                 var item = JSON.parse(array[i]);
+                 var item = array[i];
+                 console.log(item);
                  Contest.findOne({conId: item.id}, function(err, con) {
                   if(err) {
                     con = new Contest();
@@ -265,7 +266,8 @@ monitorRating = function(id, con) {
                 var array = obj.result;
                 var len = array.length, i;
                 for(i = 0; i < len; i++) {
-                  var item = JSON.parse(array[i]);
+                  var item = (array[i]);
+                  console.log(item);
                   User.findOne({cfHandle: item.handle}, function(err, user) {
                    if(!err) {
                      sendTextMessage(user.fbId, item.newRating > item.oldRating?
