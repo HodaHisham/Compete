@@ -63,21 +63,52 @@ function receivedPostback(event){
 
   if(payload =='startButton'){
 
-    var user = new User();
-    user.fbId= senderID;
-    user.save(function(err) {
+    User.findOne({ fbId : senderID } , function(err, user) {
+                 
+
+            if (err)
+                console.log(err);
+            else
+            {
+              if(!user){
+                  
+                var user = new User();
+                user.fbId= senderID;
+                user.save(function(err) {
                                                  
 
-    if (err)
-         console.log(err);
-    else
-        console.log('User created!');
+                  if (err)
+                      console.log(err);
+                   else
+                      console.log('User created!');
               });
 
-    sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+              }
+              else{
+                //user wants to begin from scratch
+                  user.fbId= senderID;
+                  user.div1= false;
+                  user.div2= false;
+                  user.gym= false;
+                user.save(function(err) {
+                                                 
+
+                  if (err)
+                      console.log(err);
+                   else
+                      console.log('User created!');
+              });
+
+              }
+
+
+
+    
   }
 
 
+});
 }
 
 function receivedMessage(event) {
