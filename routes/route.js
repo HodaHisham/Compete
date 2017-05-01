@@ -134,13 +134,13 @@ function processContest(array, ind, gym) {
   if(!item)
     return;
   var ann = false, rem24 = false, rem1 = false, systS = false, systE = false;
-  console.log(item);
+  // console.log(item);
   Contest.findOne({conId: item.id}, function(err, con) {
    if(err || !con) {
-     ann = true;
-     console.log('ann: ' + ann);
-     console.log('gym: ' + gym);
+    //  console.log('ann: ' + ann);
+    //  console.log('gym: ' + gym);
      con = new Contest();
+     con.announced = false;
    }
    con.conId = item.id;
    con.div1 = item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1? true:false;
@@ -159,17 +159,20 @@ function processContest(array, ind, gym) {
    console.log(item.relativeTimeSeconds);
    var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
    Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-   if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
-      rem24 = true;
-      con.rem24H = true;
-      // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
-    }
+   if(!con.announced) {
+     con.announced = true;
+     ann = true;
+   }
    if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
       rem1 = true;
       con.rem1H = true;
       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
+    } else if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
+       rem24 = true;
+       con.rem24H = true;
+       // console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
     }
-   if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
+    if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
       systS = true;
       con.sysTestSt = true;
       // console.log(user.fbId, 'System Testing for ' + con.name + ' has started!');
@@ -182,29 +185,28 @@ function processContest(array, ind, gym) {
       //  console.log(user.fbId, 'System Testing for ' + con.name + ' has ended!');
     }
     con.save(function(err) {
-        if (err)
-            console.log(err);
-        else
-            console.log({message: 'Contest updated/created!'});
+        // if (err)
+        //     console.log(err);
+        // else
+        //     console.log({message: 'Contest updated/created!'});
     });
     User.find({}).cursor().on('data', function(user) {
      if(!user)
        return;
      console.log(user);
      var interested = false;
+     console.log(user.div1);
+     console.log(con.div1);
      if(ann) {
        if(user.gym && con.gym) {
           interested = true;
-          console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime
-          );
+          console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
         } else if(user.div1 && con.div1) {
            interested = true;
-           console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime
-           );
+           console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
         } else if(user.div2 && con.div2) {
            interested = true;
-           console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime
-           );
+           console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
         }
       }
       if(interested) {
@@ -248,7 +250,7 @@ function monitorRating(id, con) {
                      console.log(user.fbId, item.newRating > item.oldRating?
                       'Congrats! You earned ' + (item.newRating - item.oldRating)
                       + ' rating points':'You lost '+ (item.oldRating - item.newRating)
-                      + 'points! I know you can do it next time! Keep up the hard work :D');
+                      + ' points! I know you can do it next time! Keep up the hard work :D');
                    }
                  });
                }
