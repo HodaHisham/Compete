@@ -35,7 +35,13 @@ router.post('/', function (req, res) {
               console.log("entered event message");
 
           receivedMessage(event);
-        } else {
+        }
+        else if (event.postback) 
+              console.log("entered event postback")
+              recievedPostback(event);
+
+
+        else {
           console.log("Webhook received unknown event: ", event);
         }
       });
@@ -45,6 +51,33 @@ router.post('/', function (req, res) {
     res.sendStatus(200);
   }
 });
+
+
+function receivedPostback(event){
+  var senderID = event.sender.id;
+  var recipientID = event.recipient.id;
+  var timeOfMessage = event.timestamp;
+  var postback = event.postback;
+  var payload= postback.payload;
+
+  if(payload =='startButton'){
+
+    var user = new User();
+                user.fbId= senderID;
+                user.save(function(err) {
+                                                 
+
+                  if (err)
+                      console.log(err);
+                   else
+                      console.log('User created!');
+              });
+
+                sendTextMessage(senderID,'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+  }
+
+
+}
 
 function receivedMessage(event) {
   var senderID = event.sender.id;
@@ -105,6 +138,7 @@ function receivedMessage(event) {
                    });
                   return;
                 }
+                if(messageText.length>7){
                 if(messageText.substring(0,7)=='unsub: '){
                   if(messageText.indexOf('div1') !== -1){
                       user.div1= false;
@@ -129,6 +163,7 @@ function receivedMessage(event) {
                    });
                   return;
                 }
+              }
 
               if(messageText.length>8){
                 if(messageText.substring(0,8)=='handle: '){
