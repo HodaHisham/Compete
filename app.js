@@ -26,8 +26,11 @@ router.get('/', function(req, res) {
 router.post('/', function(req, res) {
   console.log("entered post of webhook");
   var data = req.body;
+  console.log(called);
   if(!called) {
     getContests(true);
+    console.log('here');
+
     getContests(false);
     called = true;
   }
