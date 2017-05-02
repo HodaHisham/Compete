@@ -128,7 +128,8 @@ router.put('/contest/:contest_id', function(req, res) {
       }
   });
 });
-router.get('/contests/:gym', function(req, res) {
+module.exports.getcon = function() {
+  router.get('/contests/:gym', function(req, res) {
   setInterval(function() {
     // Assign the HTTP request host/path
     var gym = req.params.gym;
@@ -152,7 +153,7 @@ router.get('/contests/:gym', function(req, res) {
     });
   }, 60000*3);
 });
-
+};
 function processContest(array, ind, gym, ann) {
   if(ind == array.length)
     return;
@@ -318,4 +319,4 @@ function handleRating(array, ind, contestId) {
   });
  };
 
-module.exports = router;
+module.exports.router = router;

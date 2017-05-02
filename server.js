@@ -4,34 +4,26 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var db = require('./db');
 var router = require('./routes/route');
-var app     = express();
+var app = express();
 var bot = require('./app');
 
+// SETTING THE SERVER TO get contests' list from codeforces
+bot.getContests(true); // gym
+bot.getContests(false); // other
+
 // CONFIGURE APP TO USE bodyparser
-app.use(bodyParser.urlencoded( {extended: true }));
+app.use(bodyParser.urlencoded( {extended: true}));
 app.use(bodyParser.json());
 
 // CONNECT DATABASE
 mongoose.connect( process.env.MONGODB_URI || db.url);
-//db connection test
-mongoose.connection.on('connected',()=>{
-	console.log('Mongo works');
-})
-
-//db connection test
-mongoose.connection.on('error',(err)=>{
-	console.log('Mongo doesnt work  ' + err);
-})
-
-
 
 // SET PORT
 var port = process.env.PORT || 5000;
 
 // REGISTERING ROUTES
-app.use('/api', router);
-app.use('/webhook',bot);
-
+app.use('/api', router.router);
+app.use('/webhook', bot.router);
 
 // STARTING THE SERVER
 app.listen(port);

@@ -3,18 +3,18 @@ var User = require('./models/users');
 var request = require('request');
 var router = express.Router();
 var Contest = require('./models/contests');
-var called = false;
+// var called = false;
 
 router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
     console.log('Validating webhook');
     res.status(200).send(req.query['hub.challenge']);
-    if(!called) {
-      called = true;
-      getContests(true);
-      getContests(false);
-    }
+    // if(!called) {
+    //   called = true;
+    //   getContests(true);
+    //   getContests(false);
+    // }
   } else {
     console.error('Failed validation. Make sure the validation tokens match.');
     res.sendStatus(403);
@@ -25,12 +25,12 @@ router.get('/', function(req, res) {
 router.post('/', function(req, res) {
   console.log('entered post of webhook');
   var data = req.body;
-  console.log(called);
-  if(!called) {
-    called = true;
-    getContests(true);
-    getContests(false);
-  }
+  // console.log(called);
+  // if(!called) {
+  //   called = true;
+  //   getContests(true);
+  //   getContests(false);
+  // }
   res.sendStatus(200);
   // Make sure this is a page subscription
   if (data.object === 'page') {
@@ -102,74 +102,74 @@ function receivedMessage(event) {
   var message = event.message;
 
   User.findOne({fbId: senderID}, function(err, user) {
-            if (err)
-                console.log(err);
-            else {
-              if(!user) {
-                var user = new User();
-                user.fbId= senderID;
-                user.save(function(err) {
-                  if (err)
-                      console.log(err);
-                   else
-                      console.log('User created!');
-                });
-                sendTextMessage(senderID, 'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
-              } else{
-                  // handle user messages
-                  // var messageId = message.mid;
-                  var messageText = message.text;
-                  // var messageAttachments = message.attachments;
+        if (err)
+            console.log(err);
+        else {
+          if(!user) {
+            var user = new User();
+            user.fbId= senderID;
+            user.save(function(err) {
+              if (err)
+                  console.log(err);
+               else
+                  console.log('User created!');
+            });
+            sendTextMessage(senderID, 'Hello, welcome to compete bot!\nHere you can subscribe to get notifications about upcoming codeforces contest\n. To subscribe write "handle: your_handle"\n You can update it anytime by sending the same message');
+          } else{
+              // handle user messages
+              // var messageId = message.mid;
+              var messageText = message.text;
+              // var messageAttachments = message.attachments;
 
-                  if(messageText.length > 5) {
-                  if(messageText.substring(0, 5) == 'sub: ') {
-                    handleSubscriptions(user, messageText, true);
-                    return;
+              if(messageText.length > 5) {
+              if(messageText.substring(0, 5) == 'sub: ') {
+                handleSubscriptions(user, messageText, true);
+                return;
+              } else
+                if(messageText.length > 7)
+                  if(messageText.substring(0, 7) == 'unsub: ') {
+                      handleSubscriptions(user, messageText, false);
+                      return;
                   } else
-                    if(messageText.length > 7)
-                      if(messageText.substring(0, 7) == 'unsub: ') {
-                          handleSubscriptions(user, messageText, false);
-                          return;
-                      } else
-                        if(messageText.length > 8) {
-                          console.log('entered handling handles');
-                          if(messageText.substring(0, 8) == 'handle: ') {
-                            // check for correctness of handle
-                            var handle = messageText.slice(8);
-                            request({
-                              url: 'http://codeforces.com/api/user.info?handles='+handle,
-                              method: 'GET'
+                    if(messageText.length > 8) {
+                      console.log('entered handling handles');
+                      if(messageText.substring(0, 8) == 'handle: ') {
+                        // check for correctness of handle
+                        var handle = messageText.slice(8);
+                        request({
+                          url: 'http://codeforces.com/api/user.info?handles='+handle,
+                          method: 'GET'
 
-                            }, function(error, response, body) {
-                            if (error) {
-                              console.log('Error sending messages: ', error);
-                            } else if (response.body.error) {
-                              console.log('Error: ', response.body.error);
-                            } else {
-                                obj = JSON.parse(body);
-                                if(obj.status === 'FAILED') {
-                                sendTextMessage(senderID, 'Handle does not exist. Please try again');
-                                return;
-                              } else {
-                                user.cfHandle = handle;
-                                user.save(function(err) {
-                                   if (err)
-                                      console.log(err);
-                                    else
-                                      console.log('handle updated');
+                        }, function(error, response, body) {
+                        if (error) {
+                          console.log('Error sending messages: ', error);
+                        } else if (response.body.error) {
+                          console.log('Error: ', response.body.error);
+                        } else {
+                            obj = JSON.parse(body);
+                            if(obj.status === 'FAILED') {
+                            sendTextMessage(senderID, 'Handle does not exist. Please try again');
+                            return;
+                          } else {
+                            user.cfHandle = handle;
+                            user.save(function(err) {
+                               if (err)
+                                  console.log(err);
+                                else
+                                  console.log('handle updated');
 
-                                    sendTextMessage(senderID, 'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
-                                });
-                              }
-                            }
-                          });
+                                sendTextMessage(senderID, 'Welcome '+handle + '\nNow you can subscribe to be notified to different codeforces contests\nTo subscribe copy and paste the following and remove unwanted subscriptions\nsub: div1 div2 gym\n');
+                            });
+                          }
                         }
-                    } else
-                      handleWrongMessage(senderID, messageText);
+                      });
+                    }
                 } else
                   handleWrongMessage(senderID, messageText);
-              }
-           }
+            } else
+              handleWrongMessage(senderID, messageText);
+          }
+       }
     });
 }
 
@@ -232,9 +232,9 @@ function callSendAPI(messageData) {
       console.error(error);
     }
   });
-}
+};
 
-function getContests(gym) {
+module.exports.getContests = function(gym) {
   setInterval(function() {
     // Assign the HTTP request host/path
     // var gym = req.params.gym;
@@ -360,7 +360,7 @@ function processContest(array, ind, gym, ann) {
       //   processContest(array, ind+1, gym, ann);
       });
      });
- }
+ };
  var interv = function(id) {
    setInterval(function() {
    console.log('entered rating');
@@ -418,4 +418,4 @@ function handleRating(array, ind, contestId) {
  });
 };
 
-module.exports = router;
+module.exports.router = router;
