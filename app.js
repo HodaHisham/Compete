@@ -239,8 +239,8 @@ module.exports.getContests = function(gym) {
     // Assign the HTTP request host/path
     // var gym = req.params.gym;
       request({
-        //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
-         url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
+         url: 'http://codeforces.com/api/contest.list?gym='+gym,
+        //  url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
          method: 'GET'
         }, function(error, response, body) {
            if (error) {
@@ -365,8 +365,8 @@ function processContest(array, ind, gym, ann) {
    setInterval(function() {
    console.log('entered rating');
    request({
-         // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
-         url: 'https://sheltered-reef-68226.herokuapp.com/rating',
+         url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+        //  url: 'https://sheltered-reef-68226.herokuapp.com/rating',
          method: 'GET'
        }, function(error, response, body) {
          if (error) {
