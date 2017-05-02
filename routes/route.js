@@ -168,9 +168,18 @@ function processContest(array, ind, gym, ann) {
       con = new Contest();
       var categorySpecified = false;
       con.conId = item.id;
-      con.div1 = (categorySpecified |= (item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1));
-      con.div2 = (categorySpecified |= (item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1));
-      con.gym = (categorySpecified |= gym);
+      if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+        con.div1 = true;
+        categorySpecified = true;
+      }
+      if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+        con.div2 = true;
+        categorySpecified = true;
+      }
+      if(gym) {
+        con.gym = true;
+        categorySpecified = true;
+      }
       if(!categorySpecified) {
         con.div1 = true;
         con.div2 = true;
@@ -182,24 +191,23 @@ function processContest(array, ind, gym, ann) {
       con.ratingCh = false;
      } else ann = false;
      console.log(con);
-    //  console.log(Math.floor(-item.relativeTimeSeconds / 86400));
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-     console.log(remainingTime);
+    //  console.log(remainingTime);
      if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
         rem1 = true;
         con.rem1H = true;
-        console.log('Reminder: ' + item.name + ' will take place in 1 hour');
+        // console.log('Reminder: ' + item.name + ' will take place in 1 hour');
       } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
          rem24 = true;
          con.rem24H = true;
-         console.log('Reminder: ' + item.name + ' will take place in 24 hours');
+        //  console.log('Reminder: ' + item.name + ' will take place in 24 hours');
       }
       if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
         systS = true;
         con.sysTestSt = true;
-        console.log('System Testing for ' + item.name + ' has started!');
+        // console.log('System Testing for ' + item.name + ' has started!');
       }
       if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
          systE = true;
@@ -207,19 +215,19 @@ function processContest(array, ind, gym, ann) {
          console.log(gym);
          if(!gym)
           monitorRating(item.id);
-         console.log('System Testing for ' + item.name + ' has ended!');
+        //  console.log('System Testing for ' + item.name + ' has ended!');
       }
       con.save(function(err) {
             // if (err)
             //     console.log(err);
             // else
             //     console.log({message: 'Contest updated/created!'});
-        if(ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
         //  console.log(user);
          var interested = false;
+         if(ann) {
          if(user.gym && con.gym) {
             interested = true;
             console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
@@ -230,6 +238,7 @@ function processContest(array, ind, gym, ann) {
              interested = true;
              console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
           }
+        }
           console.log('interested ' + interested);
           if(interested) {
             if(rem24)
@@ -245,11 +254,9 @@ function processContest(array, ind, gym, ann) {
          }).on('end', function() {
            processContest(array, ind+1, gym, ann);
          });
-       } else
-        processContest(array, ind+1, gym, ann);
-      });
      });
- }
+     });
+ };
 var interv = setInterval(function() {
   console.log('entered rating');
   request({
@@ -262,11 +269,13 @@ var interv = setInterval(function() {
         } else if (response.body.error) {
           console.log('Error: ', response.body.error);
         } else {
+          console.log('body ' + body);
           var obj = JSON.parse(body);
           if(obj.status === 'FAILED') {
             console.log('Rating changes are not available', error);
           } else {
               var array = obj.result;
+              console.log('array ' + array);
               handleRating(array, 0, id);
           }
       }
@@ -292,8 +301,8 @@ function handleRating(array, ind, contestId) {
     });
     return;
   }
-  var item = array[ind];
-  console.log(item);
+  item = array[ind];
+  console.log('item' + item);
   User.find({}).cursor().on('data', function(user) {
    if(!user) {
      console.log(user.fbId, item.newRating > item.oldRating?
