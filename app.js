@@ -361,7 +361,7 @@ function processContest(array, ind, gym, ann) {
       });
      });
  };
- var interv = function(id) {
+ var monitorRating = function(id) {
    setInterval(function() {
    console.log('entered rating');
    request({
@@ -386,14 +386,10 @@ function processContest(array, ind, gym, ann) {
  }, 60000*3);
 };
 
-function monitorRating(id) {
-   interv(id);
- };
-
 function handleRating(array, ind, contestId) {
   var item;
   if(ind == array.length || !array[ind]) {
-    clearInterval(interv);
+    clearInterval(monitorRating);
     Contest.findOne({conId: contestId}, function(err, con) {
       con.save(function(err) {
             // if (err)
