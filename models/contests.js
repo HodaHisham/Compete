@@ -4,7 +4,8 @@ var Schema = mongoose.Schema;
 var ContSchema = new Schema({
     conId: {
       type: Number,
-      required: true
+      required: true,
+      unique: true
     },
     div1: Boolean,
     div2: Boolean,
