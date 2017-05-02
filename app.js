@@ -383,7 +383,8 @@ function processContest(array, ind, gym, ann) {
       });
      });
  }
- var interv = setInterval(function() {
+ var interv = function(id) {
+   setInterval(function() {
    console.log('entered rating');
    request({
          // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
@@ -405,9 +406,10 @@ function processContest(array, ind, gym, ann) {
        }
    });
  }, 60000*3);
+}
 
 function monitorRating(id) {
-   interv();
+   interv(id);
  };
 
 function handleRating(array, ind, contestId) {

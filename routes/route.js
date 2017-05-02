@@ -166,24 +166,6 @@ function processContest(array, ind, gym, ann) {
       //  console.log('ann: ' + ann);
       //  console.log('gym: ' + gym);
       con = new Contest();
-      var categorySpecified = false;
-      con.conId = item.id;
-      if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
-        con.div1 = true;
-        categorySpecified = true;
-      }
-      if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
-        con.div2 = true;
-        categorySpecified = true;
-      }
-      if(gym) {
-        con.gym = true;
-        categorySpecified = true;
-      }
-      if(!categorySpecified) {
-        con.div1 = true;
-        con.div2 = true;
-      }
       con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
       con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
       con.sysTestSt = false;
@@ -191,6 +173,24 @@ function processContest(array, ind, gym, ann) {
       con.ratingCh = false;
      } else ann = false;
      console.log(con);
+     var categorySpecified = false;
+     con.conId = item.id;
+     if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+       con.div1 = true;
+       categorySpecified = true;
+     }
+     if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+       con.div2 = true;
+       categorySpecified = true;
+     }
+     if(gym) {
+       con.gym = true;
+       categorySpecified = true;
+     }
+     if(!categorySpecified) {
+       con.div1 = true;
+       con.div2 = true;
+     }
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
@@ -212,7 +212,7 @@ function processContest(array, ind, gym, ann) {
       if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
          systE = true;
          con.sysTestEnd = true;
-         console.log(gym);
+         console.log('gym: ' + gym);
          if(!gym)
           monitorRating(item.id);
         //  console.log('System Testing for ' + item.name + ' has ended!');
@@ -225,7 +225,8 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-        //  console.log(user);
+         console.log('contest' + con);
+         console.log('user' + user);
          var interested = false;
          if(ann) {
          if(user.gym && con.gym) {
@@ -240,6 +241,8 @@ function processContest(array, ind, gym, ann) {
           }
         }
           console.log('interested ' + interested);
+          console.log('ann ' + ann);
+
           if(interested) {
             if(rem24)
               console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
@@ -257,7 +260,8 @@ function processContest(array, ind, gym, ann) {
      });
      });
  };
-var interv = setInterval(function() {
+var interv = function(id) {
+  setInterval(function() {
   console.log('entered rating');
   request({
         // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
@@ -280,10 +284,11 @@ var interv = setInterval(function() {
           }
       }
   });
-}, 60000*3);
+ }, 60000*3);
+}
 
 function monitorRating(id) {
-  interv();
+  interv(id);
 };
 
 function handleRating(array, ind, contestId) {
