@@ -1,7 +1,6 @@
 var express = require('express');
-var User    = require('../models/users');
-var router  = express.Router();
-var http    = require('http');
+var User = require('../models/users');
+var router = express.Router();
 var request = require('request');
 var Contest = require('../models/contests');
 
@@ -13,12 +12,12 @@ router.get('/', function(req, res) {
 router.get('/cf/:handle/', function(req, res) {
       request({
                     url: 'http://codeforces.com/api/user.info?handles='+req.params.handle,
-                    method: 'GET'
+                    method: 'GET',
                   }, function(error, response, body) {
                     if (error) {
-                      console.log('Error sending messages: ', error)
+                      console.log('Error sending messages: ', error);
                     } else if (response.body.error) {
-                      console.log('Error: ', response.body.error)
+                      console.log('Error: ', response.body.error);
                     } else {
                       obj = JSON.parse(body);
                       if(obj.status==='FAILED') {
@@ -42,7 +41,7 @@ router.post('/user', function(req, res) {
         user.div1 = req.body.div1;
         user.div2 = req.body.div2;
         user.gym = req.body.gym;
-
+        console.log(req.body);
         user.save(function(err) {
             if (err)
                 console.log(err);
@@ -114,9 +113,9 @@ router.get('/contests/:gym', function(req, res) {
          method: 'GET',
         }, function(error, response, body) {
            if (error) {
-             console.log('Error sending messages: ', error)
+             console.log('Error sending messages: ', error);
            } else if (response.body.error) {
-             console.log('Error: ', response.body.error)
+             console.log('Error: ', response.body.error);
            } else{
              obj = JSON.parse(body);
              if(obj.status === 'OK') {
@@ -165,7 +164,7 @@ function processContest(array, ind, gym, ann) {
         rem1 = true;
         con.rem1H = true;
         console.log('Reminder: ' + item.name + ' will take place in 1 hour');
-      } else if(!con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
+      } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
          rem24 = true;
          con.rem24H = true;
          console.log('Reminder: ' + item.name + ' will take place in 24 hours');
@@ -223,18 +222,18 @@ function processContest(array, ind, gym, ann) {
       });
      });
  }
-
+var interv;
   function monitorRating(id, con) {
-    setInterval(function() {
+    interv = setInterval(function() {
       request({
             // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
             url: 'https://sheltered-reef-68226.herokuapp.com/rating',
             method: 'GET'
           }, function(error, response, body) {
             if (error) {
-              console.log('Error sending messages: ', error)
+              console.log('Error sending messages: ', error);
             } else if (response.body.error) {
-              console.log('Error: ', response.body.error)
+              console.log('Error: ', response.body.error);
             } else {
               obj = JSON.parse(body);
               if(obj.status === 'FAILED') {
