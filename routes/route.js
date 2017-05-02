@@ -12,7 +12,7 @@ router.get('/', function(req, res) {
 router.get('/cf/:handle/', function(req, res) {
       request({
                     url: 'http://codeforces.com/api/user.info?handles='+req.params.handle,
-                    method: 'GET',
+                    method: 'GET'
                   }, function(error, response, body) {
                     if (error) {
                       console.log('Error sending messages: ', error);
@@ -56,6 +56,14 @@ router.get('/user', function(req, res) {
           res.send(err);
       else
           res.json(users);
+  });
+});
+router.get('/contest', function(req, res) {
+  Contest.find(function(err, contests) {
+      if (err)
+          res.send(err);
+      else
+          res.json(contests);
   });
 });
 
@@ -110,7 +118,7 @@ router.get('/contests/:gym', function(req, res) {
       request({
         //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
          url: 'https://sheltered-reef-68226.herokuapp.com/',
-         method: 'GET',
+         method: 'GET'
         }, function(error, response, body) {
            if (error) {
              console.log('Error sending messages: ', error);
@@ -160,6 +168,7 @@ function processContest(array, ind, gym, ann) {
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+     console.log(remainingTime);
      if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
         rem1 = true;
         con.rem1H = true;
@@ -175,10 +184,11 @@ function processContest(array, ind, gym, ann) {
         console.log('System Testing for ' + item.name + ' has started!');
       }
       if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
-        systE = true;
+         systE = true;
          con.sysTestEnd = true;
+         console.log(gym);
          if(!gym)
-          monitorRating(item.id, con);
+          monitorRating(item.id);
          console.log('System Testing for ' + item.name + ' has ended!');
       }
       con.save(function(err) {
@@ -223,8 +233,9 @@ function processContest(array, ind, gym, ann) {
      });
  }
 var interv;
-  function monitorRating(id, con) {
+  function monitorRating(id) {
     interv = setInterval(function() {
+      console.log('entered rating');
       request({
             // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
             url: 'https://sheltered-reef-68226.herokuapp.com/rating',
@@ -240,35 +251,37 @@ var interv;
                 console.log('Rating changes are not available', error);
               } else {
                   var array = obj.result;
-                  handleRating(array, 0, con);
+                  handleRating(array, 0, id);
               }
           }
       });
     }, 60000*3);
 };
 
-function handleRating(array, ind, con) {
+function handleRating(array, ind, contestId) {
   if(ind == array.length) {
     clearInterval(interv);
-    con.ratingCh = true;
-    con.save(function(err) {
-          // if (err)
-          //     console.log(err);
-          // else
-          //     console.log({message: 'Contest updated/created!'});
+    Contest.findOne({conId: contestId}, function(err, con) {
+      con.ratingCh = true;
+      con.save(function(err) {
+            // if (err)
+            //     console.log(err);
+            // else
+            //     console.log({message: 'Contest updated/created!'});
+      });
     });
     return;
   }
   var item = array[ind];
   console.log(item);
-  User.findOne({cfHandle: item.handle}, function(err, user) {
-   if(!err && !user) {
+  User.find({}).cursor().on('data', function(user) {
+   if(!user) {
      console.log(user.fbId, item.newRating > item.oldRating?
       'Congrats! You earned ' + (item.newRating - item.oldRating)
       + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
       + ' rating points in ' + item.contestName + '. I know you can do it next time! Keep up the hard work :D');
    }
-   handleRating(array, ind+1, con);
+   handleRating(array, ind+1, contestId);
  });
 }
 module.exports = router;

@@ -10,7 +10,7 @@ var UserSchema = new Schema({
     cfHandle: String,
     div1: Boolean,
     div2: Boolean,
-    gym: Boolean,
+    gym: Boolean
 });
 
 module.exports = mongoose.model('User', UserSchema);
