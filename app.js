@@ -275,9 +275,18 @@ function processContest(array, ind, gym, ann) {
       con = new Contest();
       var categorySpecified = false;
       con.conId = item.id;
-      con.div1 = (categorySpecified |= (item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1));
-      con.div2 = (categorySpecified |= (item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1));
-      con.gym = (categorySpecified |= gym);
+      if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+        con.div1 = true;
+        categorySpecified = true;
+      }
+      if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+        con.div2 = true;
+        categorySpecified = true;
+      }
+      if(gym) {
+        con.gym = true;
+        categorySpecified = true;
+      }
       if(!categorySpecified) {
         con.div1 = true;
         con.div2 = true;
@@ -289,6 +298,24 @@ function processContest(array, ind, gym, ann) {
       con.ratingCh = false;
      } else ann = false;
      console.log(con);
+     var categorySpecified = false;
+     con.conId = item.id;
+     if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+       con.div1 = true;
+       categorySpecified = true;
+     }
+     if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+       con.div2 = true;
+       categorySpecified = true;
+     }
+     if(gym) {
+       con.gym = true;
+       categorySpecified = true;
+     }
+     if(!categorySpecified) {
+       con.div1 = true;
+       con.div2 = true;
+     }
     //  console.log(Math.floor(-item.relativeTimeSeconds / 86400));
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +

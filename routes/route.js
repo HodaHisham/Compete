@@ -19,7 +19,7 @@ router.get('/cf/:handle/', function(req, res) {
                     } else if (response.body.error) {
                       console.log('Error: ', response.body.error);
                     } else {
-                      obj = JSON.parse(body);
+                      var obj = JSON.parse(body);
                       if(obj.status==='FAILED') {
                       console.log('Handle does not exist. Please try again', error);
                       return;
@@ -87,28 +87,46 @@ router.delete('/user/:user_id', function(req, res) {
 
 router.put('/user/:user_id', function(req, res) {
   User.findOne({fbId: req.params.user_id}, function(err, user) {
+      if (err)
+          res.send(err);
+      else {
+        user.fbId = req.params.user_id;
+        user.cfHandle = req.body.cfHandle;
+        user.name = req.body.name;
+        user.div1 = req.body.div1;
+        user.div2 = req.body.div2;
+        user.gym = req.body.gym;
+        user.save(function(err) {
             if (err)
-                res.send(err);
-            else {
-              user.fbId = req.params.user_id;
-              user.cfHandle = req.body.cfHandle;
-              user.name = req.body.name;
-              user.div1 = req.body.div1;
-              user.div2 = req.body.div2;
-              user.other = req.body.other;
-              user.gym = req.body.gym;
-              user.eng = req.body.eng;
-              user.russ = req.body.russ;
-              user.rated = req.body.rated;
-              user.unrated = req.body.unrated;
+                console.log(err);
+            else
+                res.json({message: 'User updated!'});
+        });
+      }
+  });
+});
+router.put('/contest/:contest_id', function(req, res) {
+  Contest.findOne({conId: req.params.contest_id}, function(err, con) {
+      if (err)
+          res.send(err);
+      else {
+        con.conId = req.params.contest_id;
+        con.div1 = req.body.div1;
+        con.div2 = req.body.div2;
+        con.gym = req.body.gym;
+        con.rem24H = req.body.rem24H;
+        con.rem1H = req.body.rem1H;
+        con.sysTestSt = req.body.sysTestSt;
+        con.sysTestEnd = req.body.sysTestEnd;
+        con.ratingCh = req.body.ratingCh;
 
-              user.save(function(err) {
-                  if (err)
-                      console.log(err);
-                  else
-                      res.json({message: 'User updated!'});
-              });
-            }
+        con.save(function(err) {
+            if (err)
+                console.log(err);
+            else
+                res.json({message: 'Contest updated!'});
+        });
+      }
   });
 });
 router.get('/contests/:gym', function(req, res) {
@@ -125,7 +143,7 @@ router.get('/contests/:gym', function(req, res) {
            } else if (response.body.error) {
              console.log('Error: ', response.body.error);
            } else{
-             obj = JSON.parse(body);
+             var obj = JSON.parse(body);
              if(obj.status === 'OK') {
                Contest.count({}, function( err, count) {
                  processContest(obj.result, 0, gym, count !== 0);
@@ -232,34 +250,36 @@ function processContest(array, ind, gym, ann) {
       });
      });
  }
-var interv;
-  function monitorRating(id) {
-    interv = setInterval(function() {
-      console.log('entered rating');
-      request({
-            // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
-            url: 'https://sheltered-reef-68226.herokuapp.com/rating',
-            method: 'GET'
-          }, function(error, response, body) {
-            if (error) {
-              console.log('Error sending messages: ', error);
-            } else if (response.body.error) {
-              console.log('Error: ', response.body.error);
-            } else {
-              obj = JSON.parse(body);
-              if(obj.status === 'FAILED') {
-                console.log('Rating changes are not available', error);
-              } else {
-                  var array = obj.result;
-                  handleRating(array, 0, id);
-              }
+var interv = setInterval(function() {
+  console.log('entered rating');
+  request({
+        // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+        url: 'https://sheltered-reef-68226.herokuapp.com/rating',
+        method: 'GET'
+      }, function(error, response, body) {
+        if (error) {
+          console.log('Error sending messages: ', error);
+        } else if (response.body.error) {
+          console.log('Error: ', response.body.error);
+        } else {
+          var obj = JSON.parse(body);
+          if(obj.status === 'FAILED') {
+            console.log('Rating changes are not available', error);
+          } else {
+              var array = obj.result;
+              handleRating(array, 0, id);
           }
-      });
-    }, 60000*3);
+      }
+  });
+}, 60000*3);
+
+function monitorRating(id) {
+  interv();
 };
 
 function handleRating(array, ind, contestId) {
-  if(ind == array.length) {
+  var item;
+  if(ind == array.length || !array[ind]) {
     clearInterval(interv);
     Contest.findOne({conId: contestId}, function(err, con) {
       con.ratingCh = true;
@@ -281,7 +301,9 @@ function handleRating(array, ind, contestId) {
       + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
       + ' rating points in ' + item.contestName + '. I know you can do it next time! Keep up the hard work :D');
    }
+  }).on('end', function() {
    handleRating(array, ind+1, contestId);
- });
-}
+  });
+ };
+
 module.exports = router;
