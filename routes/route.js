@@ -270,7 +270,7 @@ var interv = setInterval(function() {
           console.log('Error: ', response.body.error);
         } else {
           console.log('body ' + body);
-          var obj = JSON.parse(body);
+          // var obj = JSON.parse(body);
           if(obj.status === 'FAILED') {
             console.log('Rating changes are not available', error);
           } else {
