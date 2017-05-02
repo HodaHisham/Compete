@@ -4,7 +4,8 @@ var Schema = mongoose.Schema;
 var UserSchema = new Schema({
     fbId: {
       type: String,
-      required: true,
+      unique: true,
+      required: true
     },
     name: String,
     cfHandle: String,

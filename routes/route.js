@@ -118,7 +118,6 @@ router.put('/contest/:contest_id', function(req, res) {
         con.rem1H = req.body.rem1H;
         con.sysTestSt = req.body.sysTestSt;
         con.sysTestEnd = req.body.sysTestEnd;
-        con.ratingCh = req.body.ratingCh;
 
         con.save(function(err) {
             if (err)
@@ -162,35 +161,35 @@ function processContest(array, ind, gym, ann) {
     return;
   // console.log(item);
     Contest.findOne({conId: item.id}, function(err, con) {
+      var conAnn = true;
      if(err || !con) {
       //  console.log('ann: ' + ann);
       //  console.log('gym: ' + gym);
       con = new Contest();
+      var categorySpecified = false;
+      con.conId = item.id;
+      if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+        con.div1 = true;
+        categorySpecified = true;
+      }
+      if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+        con.div2 = true;
+        categorySpecified = true;
+      }
+      if(gym) {
+        con.gym = true;
+        categorySpecified = true;
+      }
+      if(!categorySpecified) {
+        con.div1 = true;
+        con.div2 = true;
+      }
       con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
       con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
       con.sysTestSt = false;
       con.sysTestEnd = false;
-      con.ratingCh = false;
-     } else ann = false;
-     console.log(con);
-     var categorySpecified = false;
-     con.conId = item.id;
-     if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
-       con.div1 = true;
-       categorySpecified = true;
-     }
-     if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
-       con.div2 = true;
-       categorySpecified = true;
-     }
-     if(gym) {
-       con.gym = true;
-       categorySpecified = true;
-     }
-     if(!categorySpecified) {
-       con.div1 = true;
-       con.div2 = true;
-     }
+    } else conAnn = false;
+    //  console.log(con);
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
@@ -212,8 +211,8 @@ function processContest(array, ind, gym, ann) {
       if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
          systE = true;
          con.sysTestEnd = true;
-         console.log('gym: ' + gym);
-         if(!gym)
+         console.log(!gym);
+         if(gym == false)
           monitorRating(item.id);
         //  console.log('System Testing for ' + item.name + ' has ended!');
       }
@@ -225,23 +224,22 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-         console.log('contest' + con);
-         console.log('user' + user);
+        //  console.log('contest' + con);
+        //  console.log('user' + user);
          var interested = false;
-         if(ann) {
+        //  console.log('user gym' + user.gym + ' con gym ' + con.gym);
          if(user.gym && con.gym) {
             interested = true;
-            console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+            if(ann && conAnn) console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
           } else if(user.div1 && con.div1) {
              interested = true;
-             console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+             if(ann && conAnn) console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
           } else if(user.div2 && con.div2) {
              interested = true;
-             console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+             if(ann && conAnn) console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
           }
-        }
-          console.log('interested ' + interested);
-          console.log('ann ' + ann);
+          // console.log('interested ' + interested);
+          // console.log('ann ' + ann);
 
           if(interested) {
             if(rem24)
@@ -275,19 +273,20 @@ var interv = function(id) {
         } else {
           console.log('body ' + body);
           // var obj = JSON.parse(body);
-          if(obj.status === 'FAILED') {
+          if(body.status === 'FAILED') {
             console.log('Rating changes are not available', error);
           } else {
-              var array = obj.result;
+              var array = body.result;
               console.log('array ' + array);
               handleRating(array, 0, id);
           }
       }
   });
  }, 60000*3);
-}
+};
 
 function monitorRating(id) {
+  console.log('monitor rating');
   interv(id);
 };
 
@@ -296,7 +295,6 @@ function handleRating(array, ind, contestId) {
   if(ind == array.length || !array[ind]) {
     clearInterval(interv);
     Contest.findOne({conId: contestId}, function(err, con) {
-      con.ratingCh = true;
       con.save(function(err) {
             // if (err)
             //     console.log(err);

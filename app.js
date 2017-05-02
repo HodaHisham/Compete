@@ -269,6 +269,7 @@ function processContest(array, ind, gym, ann) {
     return;
   // console.log(item);
     Contest.findOne({conId: item.id}, function(err, con) {
+      var conAnn = true;
      if(err || !con) {
       //  console.log('ann: ' + ann);
       //  console.log('gym: ' + gym);
@@ -295,27 +296,8 @@ function processContest(array, ind, gym, ann) {
       con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
       con.sysTestSt = false;
       con.sysTestEnd = false;
-      con.ratingCh = false;
-     } else ann = false;
+    } else conAnn = false;
      console.log(con);
-     var categorySpecified = false;
-     con.conId = item.id;
-     if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
-       con.div1 = true;
-       categorySpecified = true;
-     }
-     if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
-       con.div2 = true;
-       categorySpecified = true;
-     }
-     if(gym) {
-       con.gym = true;
-       categorySpecified = true;
-     }
-     if(!categorySpecified) {
-       con.div1 = true;
-       con.div2 = true;
-     }
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
@@ -351,17 +333,15 @@ function processContest(array, ind, gym, ann) {
            return;
         //  console.log(user);
          var interested = false;
-         if(ann) {
-           if(user.gym && con.gym) {
-              interested = true;
-              sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-            } else if(user.div1 && con.div1) {
-               interested = true;
-               sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-            } else if(user.div2 && con.div2) {
-               interested = true;
-               sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-            }
+         if(user.gym && con.gym) {
+            interested = true;
+            if(ann && conAnn) sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+          } else if(user.div1 && con.div1) {
+             interested = true;
+             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+          } else if(user.div2 && con.div2) {
+             interested = true;
+             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
           }
           console.log('interested ' + interested);
           if(interested) {
@@ -396,17 +376,17 @@ function processContest(array, ind, gym, ann) {
          } else if (response.body.error) {
            console.log('Error: ', response.body.error);
          } else {
-           var obj = JSON.parse(body);
-           if(obj.status === 'FAILED') {
+          //  var obj = JSON.parse(body);
+           if(body.status === 'FAILED') {
              console.log('Rating changes are not available', error);
            } else {
-               var array = obj.result;
+               var array = body.result;
                handleRating(array, 0, id);
            }
        }
    });
  }, 60000*3);
-}
+};
 
 function monitorRating(id) {
    interv(id);
@@ -417,7 +397,6 @@ function handleRating(array, ind, contestId) {
   if(ind == array.length || !array[ind]) {
     clearInterval(interv);
     Contest.findOne({conId: contestId}, function(err, con) {
-      con.ratingCh = true;
       con.save(function(err) {
             // if (err)
             //     console.log(err);
