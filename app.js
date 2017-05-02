@@ -240,7 +240,7 @@ function getContests(gym) {
     // var gym = req.params.gym;
       request({
         //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
-         url: 'https://sheltered-reef-68226.herokuapp.com/',
+         url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
          method: 'GET'
         }, function(error, response, body) {
            if (error) {
