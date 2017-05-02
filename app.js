@@ -11,10 +11,9 @@ router.get('/', function(req, res) {
     console.log('Validating webhook');
     res.status(200).send(req.query['hub.challenge']);
     if(!called) {
+      called = true;
       getContests(true);
       getContests(false);
-      console.log('here');
-      called = true;
     }
   } else {
     console.error('Failed validation. Make sure the validation tokens match.');
@@ -28,10 +27,9 @@ router.post('/', function(req, res) {
   var data = req.body;
   console.log(called);
   if(!called) {
-    getContests(true);
-    console.log('here');
-    getContests(false);
     called = true;
+    getContests(true);
+    getContests(false);
   }
   res.sendStatus(200);
   // Make sure this is a page subscription
