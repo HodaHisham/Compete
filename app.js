@@ -250,9 +250,9 @@ module.exports.getContests = function(gym) {
            } else{
              obj = JSON.parse(body);
              if(obj.status === 'OK') {
-               Contest.count({}, function( err, count) {
-                 processContest(obj.result, 0, gym, count !== 0);
-               });
+              //  Contest.count({}, function( err, count) {
+                 processContest(obj.result, 0, gym, true);
+              //  });
              }
            }
          });
