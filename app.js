@@ -277,15 +277,15 @@ function processContest(array, ind, gym, ann) {
       if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
         con.div1 = true;
         categorySpecified = true;
-      }
+      } else con.div1 = false;
       if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
         con.div2 = true;
         categorySpecified = true;
-      }
+      } else con.div2 = false;
       if(gym) {
         con.gym = true;
         categorySpecified = true;
-      }
+      } else con.gym = false;
       if(!categorySpecified) {
         con.div1 = true;
         con.div2 = true;
@@ -295,7 +295,7 @@ function processContest(array, ind, gym, ann) {
       con.sysTestSt = false;
       con.sysTestEnd = false;
     } else conAnn = false;
-     conAnn &= !(typeof item.relativeTimeSeconds == 'undefined' || item.relativeTimeSeconds > 0);
+     conAnn &= !(typeof item.relativeTimeSeconds == 'undefined' || item.relativeTimeSeconds > 0 || item.relativeTimeSeconds < -86400*7);
      console.log(con);
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = typeof item.relativeTimeSeconds == 'undefined'?'':item.name + ' will take place after ' + (Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
@@ -305,7 +305,7 @@ function processContest(array, ind, gym, ann) {
         rem1 = true;
         con.rem1H = true;
         // console.log('Reminder: ' + item.name + ' will take place in 1 hour');
-      } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
+      } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400 && item.relativeTimeSeconds < 0) {
          rem24 = true;
          con.rem24H = true;
         //  console.log('Reminder: ' + item.name + ' will take place in 24 hours');
