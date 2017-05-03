@@ -295,6 +295,7 @@ function processContest(array, ind, gym, ann) {
       con.sysTestSt = false;
       con.sysTestEnd = false;
     } else conAnn = false;
+     conAnn &= !(typeof item.relativeTimeSeconds == 'undefined' || item.relativeTimeSeconds > 0);
      console.log(con);
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = typeof item.relativeTimeSeconds == 'undefined'?'':item.name + ' will take place after ' + (Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
