@@ -297,8 +297,8 @@ function processContest(array, ind, gym, ann) {
     } else conAnn = false;
      console.log(con);
      var rem24 = false, rem1 = false, systS = false, systE = false;
-     var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-     Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+     var remainingTime = typeof item.relativeTimeSeconds == 'undefined'?'':item.name + ' will take place after ' + (Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
+     Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ');
      console.log(remainingTime);
      if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
         rem1 = true;
@@ -333,13 +333,16 @@ function processContest(array, ind, gym, ann) {
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
-            if(ann && conAnn) sendTextMessage(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+            if(ann && conAnn) sendTextMessage(user.fbId, 'A new gym contest is announced! ' + remainingTime);
+          } else if((user.div1 || user.div2) && con.div1 && con.div2) {
+            interested = true;
+            if(ann && conAnn) sendTextMessage(user.fbId, 'A new div1 && div2 contest is announced! ' + remainingTime);
           } else if(user.div1 && con.div1) {
              interested = true;
-             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div1 contest is announced! ' + remainingTime);
           } else if(user.div2 && con.div2) {
              interested = true;
-             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+             if(ann && conAnn) sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + remainingTime);
           }
           console.log('interested ' + interested);
           if(interested) {
