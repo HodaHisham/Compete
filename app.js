@@ -387,16 +387,16 @@ function processContest(array, ind, gym, ann) {
          } else if (response.body.error) {
            console.log('Error: ', response.body.error);
          } else {
-          //  var obj = JSON.parse(body);
-           if(body.status === 'FAILED') {
+           var obj = JSON.parse(body);
+           if(obj.status === 'FAILED') {
              console.log('Rating changes are not available', error);
            } else {
-               var array = body.result;
+               var array = obj.result;
                handleRating(array, 0, id);
            }
        }
    });
- }, 60000*3);
+ }, 60000);
 };
 
 /**
