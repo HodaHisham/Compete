@@ -342,7 +342,8 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-        if(user.handle === 'Hoda_Hisham' && con.id == 782) // FOR TESTING
+         console.log('handle: ' + user.handle + ' contest id: ' + con.id);
+         if(user.handle === 'Hoda_Hisham' && con.id == 782) // FOR TESTING
           monitorRating(con.id);
          var interested = false;
          if(user.gym && con.gym) {
@@ -406,7 +407,6 @@ function processContest(array, ind, gym, ann) {
  * @param {Number} contestId the contest getting its rating results
  */
 function handleRating(array, ind, contestId) {
-  var item;
   if(ind == array.length || !array[ind]) {
     clearInterval(monitorRating);
     Contest.findOne({conId: contestId}, function(err, con) {
@@ -419,7 +419,7 @@ function handleRating(array, ind, contestId) {
     });
     return;
   }
-  item = array[ind];
+  var item = array[ind];
   User.find({cfHandle: item.handle}).cursor().on('data', function(user) {
    if(user) {
      var newcol = calRatingColor(item.newRating);
