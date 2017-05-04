@@ -342,8 +342,6 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-          if(user.cfHandle === 'Hoda_Hisham' && con.conId == 606)
-            monitorRating(606);
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
@@ -376,7 +374,6 @@ function processContest(array, ind, gym, ann) {
  };
  var monitorRating = function(id) {
    setInterval(function() {
-   console.log('entered rating');
    request({
          url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
         //  url: 'https://sheltered-reef-68226.herokuapp.com/rating',
