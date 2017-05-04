@@ -20,7 +20,7 @@ router.get('/cf/:handle/', function(req, res) {
                       console.log('Error: ', response.body.error);
                     } else {
                       var obj = JSON.parse(body);
-                      if(obj.status==='FAILED') {
+                      if(obj.status === 'FAILED') {
                       console.log('Handle does not exist. Please try again', error);
                       return;
                     } else {
@@ -108,7 +108,7 @@ router.put('/user/:user_id', function(req, res) {
 router.put('/contest/:contest_id', function(req, res) {
   Contest.findOne({conId: req.params.contest_id}, function(err, con) {
       if (err)
-          res.send(err);
+        res.send(err);
       else {
         con.conId = req.params.contest_id;
         con.div1 = req.body.div1;
@@ -128,31 +128,31 @@ router.put('/contest/:contest_id', function(req, res) {
       }
   });
 });
-module.exports.getcon = function() {
-  router.get('/contests/:gym', function(req, res) {
-  setInterval(function() {
+module.exports.getContests = function() {
+  // router.get('/contests/:gym', function(req, res) {
+   setInterval(function() {
     // Assign the HTTP request host/path
-    var gym = req.params.gym;
-      request({
-        //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
-         url: 'https://sheltered-reef-68226.herokuapp.com/',
-         method: 'GET'
-        }, function(error, response, body) {
-           if (error) {
-             console.log('Error sending messages: ', error);
-           } else if (response.body.error) {
-             console.log('Error: ', response.body.error);
-           } else{
-             var obj = JSON.parse(body);
-             if(obj.status === 'OK') {
-               Contest.count({}, function( err, count) {
-                 processContest(obj.result, 0, gym, count !== 0);
-               });
-             }
+    // var gym = req.params.gym;
+    request({
+      //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
+       url: 'https://sheltered-reef-68226.herokuapp.com/contest/'+false,
+       method: 'GET'
+    }, function(error, response, body) {
+       if (error) {
+         console.log('Error sending messages: ', error);
+       } else if (response.body.error) {
+         console.log('Error: ', response.body.error);
+       } else{
+         var obj = JSON.parse(body);
+         if(obj.status === 'OK') {
+           Contest.count({}, function( err, count) {
+             processContest(obj.result, 0, false, count !== 0);
+           });
+         }
        }
     });
-  }, 60000*3);
-});
+  }, 60000);
+ // });
 };
 function processContest(array, ind, gym, ann) {
   if(ind == array.length)
@@ -160,104 +160,106 @@ function processContest(array, ind, gym, ann) {
   var item = array[ind];
   if(!item)
     return;
-  // console.log(item);
-    Contest.findOne({conId: item.id}, function(err, con) {
-      var conAnn = true;
-     if(err || !con) {
-      //  console.log('ann: ' + ann);
-      //  console.log('gym: ' + gym);
-      con = new Contest();
-      var categorySpecified = false;
-      con.conId = item.id;
-      if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
-        con.div1 = true;
-        categorySpecified = true;
-      }
-      if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
-        con.div2 = true;
-        categorySpecified = true;
-      }
-      if(gym) {
-        con.gym = true;
-        categorySpecified = true;
-      }
-      if(!categorySpecified) {
-        con.div1 = true;
-        con.div2 = true;
-      }
-      con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
-      con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
-      con.sysTestSt = false;
-      con.sysTestEnd = false;
-    } else conAnn = false;
-    //  console.log(con);
-     var rem24 = false, rem1 = false, systS = false, systE = false;
-     var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
-     Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-    //  console.log(remainingTime);
-     if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
-        rem1 = true;
-        con.rem1H = true;
-        // console.log('Reminder: ' + item.name + ' will take place in 1 hour');
-      } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
-         rem24 = true;
-         con.rem24H = true;
-        //  console.log('Reminder: ' + item.name + ' will take place in 24 hours');
-      }
-      if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
-        systS = true;
-        con.sysTestSt = true;
-        // console.log('System Testing for ' + item.name + ' has started!');
-      }
-      if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
-         systE = true;
-         con.sysTestEnd = true;
-         console.log(!gym);
-         if(gym == false)
-          monitorRating(item.id);
-        //  console.log('System Testing for ' + item.name + ' has ended!');
-      }
-      con.save(function(err) {
-            // if (err)
-            //     console.log(err);
-            // else
-            //     console.log({message: 'Contest updated/created!'});
-        User.find({}).cursor().on('data', function(user) {
-         if(!user)
-           return;
-        //  console.log('contest' + con);
-        //  console.log('user' + user);
-         var interested = false;
-        //  console.log('user gym' + user.gym + ' con gym ' + con.gym);
-         if(user.gym && con.gym) {
-            interested = true;
-            if(ann && conAnn) console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-          } else if(user.div1 && con.div1) {
-             interested = true;
-             if(ann && conAnn) console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-          } else if(user.div2 && con.div2) {
-             interested = true;
-             if(ann && conAnn) console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
-          }
-          // console.log('interested ' + interested);
-          // console.log('ann ' + ann);
+  console.log(item);
+  Contest.findOne({conId: item.id}, function(err, con) {
+   var conAnn = true;
+   if(err || !con) {
+    //  console.log('ann: ' + ann);
+    //  console.log('gym: ' + gym);
+    con = new Contest();
+    var categorySpecified = false;
+    con.conId = item.id;
+    if(item.name.indexOf('Div.1') !== -1 || item.name.indexOf('Div. 1') !== -1) {
+      con.div1 = true;
+      categorySpecified = true;
+    }
+    if(item.name.indexOf('Div.2') !== -1 || item.name.indexOf('Div. 2') !== -1) {
+      con.div2 = true;
+      categorySpecified = true;
+    }
+    if(gym) {
+      con.gym = true;
+      categorySpecified = true;
+    }
+    if(!categorySpecified) {
+      con.div1 = true;
+      con.div2 = true;
+    }
+    con.rem24H = typeof item.relativeTimeSeconds == 'undefined';
+    con.rem1H = typeof item.relativeTimeSeconds == 'undefined';
+    con.sysTestSt = false;
+    con.sysTestEnd = false;
+  } else conAnn = false;
+  //  console.log(con);
+   var rem24 = false, rem1 = false, systS = false, systE = false;
+   var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
+   Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
+  //  console.log(remainingTime);
+   if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
+      rem1 = true;
+      con.rem1H = true;
+      // console.log('Reminder: ' + item.name + ' will take place in 1 hour');
+    } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
+       rem24 = true;
+       con.rem24H = true;
+      //  console.log('Reminder: ' + item.name + ' will take place in 24 hours');
+    }
+    if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
+      systS = true;
+      con.sysTestSt = true;
+      // console.log('System Testing for ' + item.name + ' has started!');
+    }
+    if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
+       systE = true;
+       con.sysTestEnd = true;
+       console.log(!gym);
+       if(gym == false)
+        monitorRating(item.id);
+      //  console.log('System Testing for ' + item.name + ' has ended!');
+    }
+    con.save(function(err) {
+          // if (err)
+          //     console.log(err);
+          // else
+          //     console.log({message: 'Contest updated/created!'});
+      User.find({}).cursor().on('data', function(user) {
+       if(!user)
+         return;
+      //  console.log('contest' + con);
+      //  console.log('user' + user);
+      if(user.handle == 'Hoda_Hisham' && con.id == 782)
+        monitorRating(item.id);
+       var interested = false;
+      //  console.log('user gym' + user.gym + ' con gym ' + con.gym);
+       if(user.gym && con.gym) {
+          interested = true;
+          if(ann && conAnn) console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+        } else if(user.div1 && con.div1) {
+           interested = true;
+           if(ann && conAnn) console.log(user.fbId, 'A new div1 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+        } else if(user.div2 && con.div2) {
+           interested = true;
+           if(ann && conAnn) console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
+        }
+        // console.log('interested ' + interested);
+        // console.log('ann ' + ann);
 
-          if(interested) {
-            if(rem24)
-              console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
-            if(rem1)
-              console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
-            if(systS)
-              console.log(user.fbId, 'System Testing for ' + item.name + ' has started!');
-            if(systE)
-              console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
-          }
-          // console.log(con);
-         }).on('end', function() {
-           processContest(array, ind+1, gym, ann);
-         });
+        if(interested) {
+          if(rem24)
+            console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
+          if(rem1)
+            console.log(user.fbId, 'Reminder: ' + item.name + ' will take place in 1 hour');
+          if(systS)
+            console.log(user.fbId, 'System Testing for ' + item.name + ' has started!');
+          if(systE)
+            console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
+        }
+        // console.log(con);
+       }).on('end', function() {
+         processContest(array, ind+1, gym, ann);
+       });
      });
-     });
+  });
  };
 var interv = function(id) {
   setInterval(function() {
@@ -286,6 +288,12 @@ var interv = function(id) {
  }, 60000*3);
 };
 
+var monitorRating = function(id) {
+  var array = [{'contestId': 100002, 'contestName': 'Helvetic Coding Contest 2017 online mirror (teams, unrated)', 'handle':
+   'Hoda_Hisham', 'rank': 1, 'ratingUpdateTimeSeconds': 1438284000, 'oldRating': 2849, 'newRating': 2941}];
+  handleRating(array, 0, id);
+};
+
 function handleRating(array, ind, contestId) {
   var item;
   if(ind == array.length || !array[ind]) {
@@ -301,17 +309,41 @@ function handleRating(array, ind, contestId) {
     return;
   }
   item = array[ind];
-  console.log('item' + item);
-  User.find({}).cursor().on('data', function(user) {
-   if(!user) {
+  User.find({cfHandle: item.handle}).cursor().on('data', function(user) {
+   if(user) {
+     var newcol = calRatingColor(item.newRating);
+     var oldcol = calRatingColor(item.oldRating);
+     var ratingCol = newcol === oldcol?'. ':'. You became a(n) ' + newcol + '!';
      console.log(user.fbId, item.newRating > item.oldRating?
       'Congrats! You earned ' + (item.newRating - item.oldRating)
-      + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
-      + ' rating points in ' + item.contestName + '. I know you can do it next time! Keep up the hard work :D');
+      + ' rating points in ' + item.contestName + ratingCol:'You lost '+ (item.oldRating - item.newRating)
+      + ' rating points in ' + item.contestName + + ratingCol + 'I know you can do it next time! Keep up the hard work :D');
    }
   }).on('end', function() {
    handleRating(array, ind+1, contestId);
   });
  };
+
+ function calRatingColor(rating) {
+   if(rating >= 2900)
+     return 'Legendary Grandmaster	';
+   else if(rating >= 2600 && rating <= 2899)
+     return 'International Grandmaster';
+   else if(rating >= 2400 && rating <= 2599)
+     return 'Grandmaster';
+   else if(rating >= 2300 && rating <= 2399)
+     return 'International Master';
+   else if(rating >= 2200 && rating <= 2299)
+     return 'Master';
+   else if(rating >= 1900 && rating <= 2199)
+     return 'Candidate Master';
+   else if(rating >= 1600 && rating <= 1899)
+     return 'Expert';
+   else if(rating >= 1400 && rating <= 1599)
+     return 'Specialist';
+   else if(rating >= 1200 && rating <= 1399)
+     return 'Pupil';
+   else return 'Newbie';
+ }
 
 module.exports.router = router;

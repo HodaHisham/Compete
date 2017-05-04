@@ -237,7 +237,6 @@ function callSendAPI(messageData) {
 module.exports.getContests = function(gym) {
   setInterval(function() {
     // Assign the HTTP request host/path
-    // var gym = req.params.gym;
       request({
          url: 'http://codeforces.com/api/contest.list?gym='+gym,
         //  url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
@@ -256,7 +255,7 @@ module.exports.getContests = function(gym) {
              }
            }
          });
-  }, 60000*3);
+  }, 60000*2);
 };
 
 function processContest(array, ind, gym, ann) {
@@ -296,11 +295,11 @@ function processContest(array, ind, gym, ann) {
       con.sysTestEnd = false;
     } else conAnn = false;
      conAnn &= !(typeof item.relativeTimeSeconds == 'undefined' || item.relativeTimeSeconds > 0 || item.relativeTimeSeconds < -86400*7);
-     console.log(con);
+    //  console.log(con);
      var rem24 = false, rem1 = false, systS = false, systE = false;
      var remainingTime = typeof item.relativeTimeSeconds == 'undefined'?'':item.name + ' will take place after ' + (Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
      Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ');
-     console.log(remainingTime);
+    //  console.log(remainingTime);
      if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
         rem1 = true;
         con.rem1H = true;
@@ -331,6 +330,8 @@ function processContest(array, ind, gym, ann) {
          if(!user)
            return;
         //  console.log(user);
+        if(user.handle == 'Hoda_Hisham' && con.id == 782) //FOR TESTING
+          monitorRating(con.id);
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
@@ -345,7 +346,7 @@ function processContest(array, ind, gym, ann) {
              interested = true;
              if(ann && conAnn) sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + remainingTime);
           }
-          console.log('interested ' + interested);
+          // console.log('interested ' + interested);
           if(interested) {
             if(rem24)
               sendTextMessage(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
@@ -405,17 +406,41 @@ function handleRating(array, ind, contestId) {
     return;
   }
   item = array[ind];
-  console.log(item);
-  User.find({}).cursor().on('data', function(user) {
-   if(!user) {
+  User.find({cfHandle: item.handle}).cursor().on('data', function(user) {
+   if(user) {
+     var newcol = calRatingColor(item.newRating);
+     var oldcol = calRatingColor(item.oldRating);
+     var ratingCol = newcol === oldcol?'. ':'. You became a(n) ' + newcol + '!';
      sendTextMessage(user.fbId, item.newRating > item.oldRating?
       'Congrats! You earned ' + (item.newRating - item.oldRating)
-      + ' rating points in ' + item.contestName:'You lost '+ (item.oldRating - item.newRating)
-      + ' rating points in ' + item.contestName + '. I know you can do it next time! Keep up the hard work :D');
+      + ' rating points in ' + item.contestName + ratingCol:'You lost '+ (item.oldRating - item.newRating)
+      + ' rating points in ' + item.contestName + + ratingCol + 'I know you can do it next time! Keep up the hard work :D');
    }
  }).on('end', function() {
   handleRating(array, ind+1, contestId);
  });
 };
+
+function calRatingColor(rating) {
+  if(rating >= 2900)
+    return 'Legendary Grandmaster	';
+  else if(rating >= 2600 && rating <= 2899)
+    return 'International Grandmaster';
+  else if(rating >= 2400 && rating <= 2599)
+    return 'Grandmaster';
+  else if(rating >= 2300 && rating <= 2399)
+    return 'International Master';
+  else if(rating >= 2200 && rating <= 2299)
+    return 'Master';
+  else if(rating >= 1900 && rating <= 2199)
+    return 'Candidate Master';
+  else if(rating >= 1600 && rating <= 1899)
+    return 'Expert';
+  else if(rating >= 1400 && rating <= 1599)
+    return 'Specialist';
+  else if(rating >= 1200 && rating <= 1399)
+    return 'Pupil';
+  else return 'Newbie';
+}
 
 module.exports.router = router;
