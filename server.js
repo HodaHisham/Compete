@@ -8,9 +8,9 @@ var app = express();
 var bot = require('./app');
 
 // SETTING THE SERVER TO get contests' list from codeforces
-// bot.getContests(true); // gym
-// bot.getContests(false); // other
-router.getContests(false);
+bot.getContests(true); // gym
+bot.getContests(false); // other
+// router.getContests(false);
 
 // CONFIGURE APP TO USE bodyparser
 app.use(bodyParser.urlencoded( {extended: true}));
