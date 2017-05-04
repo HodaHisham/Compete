@@ -342,9 +342,9 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-         console.log('handle: ' + user.handle + ' contest id: ' + con.id);
-         if(user.handle === 'Hoda_Hisham' && con.id == 782) // FOR TESTING
-          monitorRating(con.id);
+         console.log('handle: ' + user.cfHandle + ' contest id: ' + con.conId);
+         if(user.cfHandle === 'Hoda_Hisham' && con.conId == 782) // FOR TESTING
+          monitorRating(con.conId);
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
