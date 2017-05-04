@@ -121,7 +121,7 @@ function receivedMessage(event) {
               if(messageText.substring(0, 5) == 'sub: ') {
                 handleSubscriptions(user, messageText, true);
                 return;
-              } else
+              } else {
                 if(messageText.length > 7) {
                   if(messageText.substring(0, 7) == 'unsub: ') {
                       handleSubscriptions(user, messageText, false);
@@ -165,6 +165,7 @@ function receivedMessage(event) {
                   handleWrongMessage(senderID, messageText);
               } else
                 handleWrongMessage(senderID, messageText);
+             }
             } else
               handleWrongMessage(senderID, messageText);
           }
@@ -378,6 +379,7 @@ function processContest(array, ind, gym, ann) {
  };
  var monitorRating = function(id) {
    setInterval(function() {
+     console.log('getting rating...');
    request({
          url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
         //  url: 'https://sheltered-reef-68226.herokuapp.com/rating',
