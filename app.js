@@ -173,7 +173,7 @@ function receivedMessage(event) {
             if(message.attachments){
 
               sendTextMessage(senderID,'Don\'t understand attachments :(');
-              sendAttachment(senderID, message.attachments);
+              
             }
             else handleWrongMessage(senderID,messageText);
         }
