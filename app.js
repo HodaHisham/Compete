@@ -174,7 +174,6 @@ function receivedMessage(event) {
               console.log(attachments);
               sendTextMessage(senderID,'Attachment');
             }
-            }
             else handleWrongMessage(senderID,messageText);
         }
        }
