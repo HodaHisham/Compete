@@ -116,7 +116,7 @@ function receivedMessage(event) {
               // var messageId = message.mid;
               var messageText = message.text;
               var messageAttachments = message.attachments;
-              if(messageText){
+              if(message.text){
               if(messageText.length > 5) {
               if(messageText.substring(0, 5) == 'sub: ') {
                 handleSubscriptions(user, messageText, true);
@@ -170,7 +170,7 @@ function receivedMessage(event) {
               handleWrongMessage(senderID, messageText);
           }
           else
-            if(messageAttachments)
+            if(message.attachments)
               sendAttachment(senderID,messageAttachments);
             else handleWrongMessage(senderID,messageText);
         }
