@@ -154,6 +154,13 @@ module.exports.getContests = function() {
   }, 60000);
  // });
 };
+/**
+ * Recursively iterate over array and handling if announcements should be sent to users
+ * @param {String} array The result array from request sent to codeforces containing info about contests
+ * @param {Number} ind the index of the current contest being processed in the array
+ * @param {Boolean} gym whether the request sent was for gym contests
+ * @param {Boolean} ann whether the bot should announce any contest
+ */
 function processContest(array, ind, gym, ann) {
   if(ind == array.length)
     return;
@@ -228,7 +235,7 @@ function processContest(array, ind, gym, ann) {
       //  console.log('contest' + con);
       //  console.log('user' + user);
       if(user.handle == 'Hoda_Hisham' && con.id == 782)
-        monitorRating(item.id);
+        monitorRating(con.id);
        var interested = false;
       //  console.log('user gym' + user.gym + ' con gym ' + con.gym);
        if(user.gym && con.gym) {
@@ -261,32 +268,32 @@ function processContest(array, ind, gym, ann) {
      });
   });
  };
-var interv = function(id) {
-  setInterval(function() {
-  console.log('entered rating');
-  request({
-        // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
-        url: 'https://sheltered-reef-68226.herokuapp.com/rating',
-        method: 'GET'
-      }, function(error, response, body) {
-        if (error) {
-          console.log('Error sending messages: ', error);
-        } else if (response.body.error) {
-          console.log('Error: ', response.body.error);
-        } else {
-          console.log('body ' + body);
-          // var obj = JSON.parse(body);
-          if(body.status === 'FAILED') {
-            console.log('Rating changes are not available', error);
-          } else {
-              var array = body.result;
-              console.log('array ' + array);
-              handleRating(array, 0, id);
-          }
-      }
-  });
- }, 60000*3);
-};
+// var interv = function(id) {
+//   setInterval(function() {
+//   console.log('entered rating');
+//   request({
+//         // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
+//         url: 'https://sheltered-reef-68226.herokuapp.com/rating',
+//         method: 'GET'
+//       }, function(error, response, body) {
+//         if (error) {
+//           console.log('Error sending messages: ', error);
+//         } else if (response.body.error) {
+//           console.log('Error: ', response.body.error);
+//         } else {
+//           console.log('body ' + body);
+//           // var obj = JSON.parse(body);
+//           if(body.status === 'FAILED') {
+//             console.log('Rating changes are not available', error);
+//           } else {
+//               var array = body.result;
+//               console.log('array ' + array);
+//               handleRating(array, 0, id);
+//           }
+//       }
+//   });
+//  }, 60000*3);
+// };
 
 var monitorRating = function(id) {
   var array = [{'contestId': 100002, 'contestName': 'Helvetic Coding Contest 2017 online mirror (teams, unrated)', 'handle':
@@ -294,6 +301,12 @@ var monitorRating = function(id) {
   handleRating(array, 0, id);
 };
 
+/**
+ * Recursively iterate over array and handling if announcements should be sent to users
+ * @param {String} array The result array from request sent to codeforces containing info about rating changes
+ * @param {Number} ind the index of the current rating change being processed in the array
+ * @param {Number} contestId the contest getting its rating results
+ */
 function handleRating(array, ind, contestId) {
   var item;
   if(ind == array.length || !array[ind]) {
@@ -324,6 +337,11 @@ function handleRating(array, ind, contestId) {
   });
  };
 
+ /**
+  * Calculates the title of the input rating
+  * @param {Number} rating
+  * @return {String} the corresponding title of the rating parameter
+  */
  function calRatingColor(rating) {
    if(rating >= 2900)
      return 'Legendary Grandmaster	';

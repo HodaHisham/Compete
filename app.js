@@ -3,18 +3,12 @@ var User = require('./models/users');
 var request = require('request');
 var router = express.Router();
 var Contest = require('./models/contests');
-// var called = false;
 
 router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
     console.log('Validating webhook');
     res.status(200).send(req.query['hub.challenge']);
-    // if(!called) {
-    //   called = true;
-    //   getContests(true);
-    //   getContests(false);
-    // }
   } else {
     console.error('Failed validation. Make sure the validation tokens match.');
     res.sendStatus(403);
@@ -25,12 +19,6 @@ router.get('/', function(req, res) {
 router.post('/', function(req, res) {
   console.log('entered post of webhook');
   var data = req.body;
-  // console.log(called);
-  // if(!called) {
-  //   called = true;
-  //   getContests(true);
-  //   getContests(false);
-  // }
   res.sendStatus(200);
   // Make sure this is a page subscription
   if (data.object === 'page') {
@@ -55,6 +43,10 @@ router.post('/', function(req, res) {
   }
 });
 
+/**
+ * Handling postback from user
+ * @param {Object} event
+ */
 function receivedPostback(event) {
   var senderID = event.sender.id;
   // var recipientID = event.recipient.id;
@@ -95,6 +87,10 @@ function receivedPostback(event) {
   }
 }
 
+/**
+ * Handling message from user
+ * @param {Object} event
+ */
 function receivedMessage(event) {
   var senderID = event.sender.id;
   // var recipientID = event.recipient.id;
@@ -172,21 +168,30 @@ function receivedMessage(event) {
        }
     });
 }
-
+/**
+ * Sends a user of the bot a message handling messages not handled yet by the bot.
+ * @param {String} senderID The facebook page-scoped user ID I just received a message from.
+ * @param {String} messageText The message the bot received.
+ */
   function handleWrongMessage(senderID, messageText) {
     sendTextMessage(senderID, 'Sorry I don\'t understand :(\nTo update your handle, type handle: my_handle\nTo subscribe, write sub: div1 div2 gym\nTo unsubscribe, write unsub: div1 div2 gym\n');
   }
 
-
+  /**
+   * Handles the subscriptions of the users to certain contest categories and confirms with the user by sending a message back
+   * @param {String} user The facebook page-scoped user ID I just received a message from.
+   * @param {String} messageText The message the bot received.
+   * @param {Boolean} sub whether the user wants to subscribe to the specified categories.
+   */
   function handleSubscriptions(user, messageText, sub) {
     if(messageText.indexOf('div1') !== -1) {
-      user.div1= sub;
+      user.div1 = sub;
     }
     if(messageText.indexOf('div2') !== -1) {
-        user.div2= sub;
+        user.div2 = sub;
     }
     if(messageText.indexOf('gym') !== -1) {
-        user.gym= sub;
+        user.gym = sub;
     }
     user.save(function(err) {
       if (err)
@@ -200,6 +205,11 @@ function receivedMessage(event) {
      });
   }
 
+  /**
+   * Converts the messageText to JSON format to send afterwards using Send API provided by messanger
+   * @param {String} recipientId The facebook page-scoped user ID I just received a message from.
+   * @param {String} messageText The message the bot is sending.
+   */
   function sendTextMessage(recipientId, messageText) {
   var messageData = {
     recipient: {
@@ -212,7 +222,10 @@ function receivedMessage(event) {
 
   callSendAPI(messageData);
 }
-
+/**
+ * Sends the actual message to the user
+ * @param {Object} messageData The message the bot is sending in JSON format.
+ */
 function callSendAPI(messageData) {
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
@@ -258,18 +271,22 @@ module.exports.getContests = function(gym) {
   }, 60000*2);
 };
 
+/**
+ * Recursively iterate over array and handling if announcements should be sent to users
+ * @param {String} array The result array from request sent to codeforces containing info about contests
+ * @param {Number} ind the index of the current contest being processed in the array
+ * @param {Boolean} gym whether the request sent was for gym contests
+ * @param {Boolean} ann whether the bot should announce any contest
+ */
 function processContest(array, ind, gym, ann) {
   if(ind == array.length)
     return;
   var item = array[ind];
   if(!item)
     return;
-  // console.log(item);
     Contest.findOne({conId: item.id}, function(err, con) {
-      var conAnn = true;
+     var conAnn = true;
      if(err || !con) {
-      //  console.log('ann: ' + ann);
-      //  console.log('gym: ' + gym);
       con = new Contest();
       var categorySpecified = false;
       con.conId = item.id;
@@ -322,14 +339,9 @@ function processContest(array, ind, gym, ann) {
         //  console.log('System Testing for ' + item.name + ' has ended!');
       }
       con.save(function(err) {
-            // if (err)
-            //     console.log(err);
-            // else
-            //     console.log({message: 'Contest updated/created!'});
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-        //  console.log(user);
         if(user.handle === 'Hoda_Hisham' && con.id == 782) // FOR TESTING
           monitorRating(con.id);
          var interested = false;
@@ -346,7 +358,6 @@ function processContest(array, ind, gym, ann) {
              interested = true;
              if(ann && conAnn) sendTextMessage(user.fbId, 'A new div2 contest is announced! ' + remainingTime);
           }
-          // console.log('interested ' + interested);
           if(interested) {
             if(rem24)
               sendTextMessage(user.fbId, 'Reminder: ' + item.name + ' will take place in 24 hours');
@@ -357,12 +368,9 @@ function processContest(array, ind, gym, ann) {
             if(systE)
               sendTextMessage(user.fbId, 'System Testing for ' + item.name + ' has ended!');
           }
-          // console.log(con);
          }).on('end', function() {
            processContest(array, ind+1, gym, ann);
          });
-      //  } else
-      //   processContest(array, ind+1, gym, ann);
       });
      });
  };
@@ -391,16 +399,22 @@ function processContest(array, ind, gym, ann) {
  }, 60000*3);
 };
 
+/**
+ * Recursively iterate over array and handling if announcements should be sent to users
+ * @param {String} array The result array from request sent to codeforces containing info about rating changes
+ * @param {Number} ind the index of the current rating change being processed in the array
+ * @param {Number} contestId the contest getting its rating results
+ */
 function handleRating(array, ind, contestId) {
   var item;
   if(ind == array.length || !array[ind]) {
     clearInterval(monitorRating);
     Contest.findOne({conId: contestId}, function(err, con) {
       con.save(function(err) {
-            // if (err)
-            //     console.log(err);
-            // else
-            //     console.log({message: 'Contest updated/created!'});
+            if (err)
+                console.log(err);
+            else
+                console.log({message: 'Contest updated/created!'});
       });
     });
     return;
@@ -421,6 +435,11 @@ function handleRating(array, ind, contestId) {
  });
 };
 
+/**
+ * Calculates the title of the input rating
+ * @param {Number} rating
+ * @return {String} the corresponding title of the rating parameter
+ */
 function calRatingColor(rating) {
   if(rating >= 2900)
     return 'Legendary Grandmaster	';
