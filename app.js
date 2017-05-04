@@ -330,7 +330,7 @@ function processContest(array, ind, gym, ann) {
          if(!user)
            return;
         //  console.log(user);
-        if(user.handle == 'Hoda_Hisham' && con.id == 782) //FOR TESTING
+        if(user.handle === 'Hoda_Hisham' && con.id == 782) // FOR TESTING
           monitorRating(con.id);
          var interested = false;
          if(user.gym && con.gym) {
