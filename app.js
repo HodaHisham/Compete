@@ -342,8 +342,8 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
-          if(user.cfHandle === 'Hoda_Hisham' && con.conId == 782)
-            monitorRating(782);
+          if(user.cfHandle === 'Hoda_Hisham' && con.conId == 606)
+            monitorRating(606);
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
@@ -396,7 +396,7 @@ function processContest(array, ind, gym, ann) {
            }
        }
    });
- }, 60000);
+ }, 60000*2);
 };
 
 /**
