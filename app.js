@@ -250,6 +250,7 @@ function callSendAPI(messageData) {
 module.exports.getContests = function(gym) {
   setInterval(function() {
     // Assign the HTTP request host/path
+    console.log('getting contests...');
       request({
          url: 'http://codeforces.com/api/contest.list?gym='+gym,
         //  url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
