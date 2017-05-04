@@ -1,21 +1,17 @@
-var mongoose     = require('mongoose');
-var Schema       = mongoose.Schema;
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 
-var UserSchema   = new Schema({
-    fbId : {
+var UserSchema = new Schema({
+    fbId: {
       type: String,
-      required : true
+      unique: true,
+      required: true
     },
     name: String,
     cfHandle: String,
     div1: Boolean,
     div2: Boolean,
-    other: Boolean,
-    gym: Boolean,
-    eng: Boolean,
-    russ: Boolean,
-    rated: Boolean,
-    unrated:Boolean
+    gym: Boolean
 });
 
 module.exports = mongoose.model('User', UserSchema);

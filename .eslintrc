@@ -1,3 +1,10 @@
 {
-    "extends": "google"
+    "extends": "google",
+    "rules": {
+        "max-len": 0,
+        "no-var":0,
+        "one-var":0,
+        "new-cap":0,
+        "comma-dangle":0
+    }
 }
