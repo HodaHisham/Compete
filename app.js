@@ -171,8 +171,8 @@ function receivedMessage(event) {
           }
           else
             if(message.attachments){
-              console.log(message.attachments);
-              sendTextMessage(senderID,'Attachment');
+
+              sendAttachment(senderID,messageAttachments);
             }
             else handleWrongMessage(senderID,messageText);
         }
@@ -222,7 +222,7 @@ function sendAttachment(recipientId, messageAttachments) {
       id: recipientId
     },
     message: {
-      attachments: messageAttachments
+      attachment: messageAttachments
     }
   };
 
