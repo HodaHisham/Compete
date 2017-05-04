@@ -122,7 +122,7 @@ function receivedMessage(event) {
                 handleSubscriptions(user, messageText, true);
                 return;
               } else
-                if(messageText.length > 7)
+                if(messageText.length > 7) {
                   if(messageText.substring(0, 7) == 'unsub: ') {
                       handleSubscriptions(user, messageText, false);
                       return;
@@ -159,9 +159,12 @@ function receivedMessage(event) {
                           }
                         }
                       });
-                    }
+                    } else
+                      handleWrongMessage(senderID, messageText);
                 } else
                   handleWrongMessage(senderID, messageText);
+              } else
+                handleWrongMessage(senderID, messageText);
             } else
               handleWrongMessage(senderID, messageText);
           }
