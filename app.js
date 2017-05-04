@@ -342,6 +342,8 @@ function processContest(array, ind, gym, ann) {
         User.find({}).cursor().on('data', function(user) {
          if(!user)
            return;
+          if(user.cfHandle === 'Hoda_Hisham' && con.conId == 782)
+            monitorRating(782);
          var interested = false;
          if(user.gym && con.gym) {
             interested = true;
@@ -423,7 +425,7 @@ function handleRating(array, ind, contestId) {
      var oldcol = calRatingColor(item.oldRating);
      var ratingCol = newcol === oldcol?'. ':'. You became a(n) ' + newcol + '!';
      sendTextMessage(user.fbId, item.newRating > item.oldRating?
-      'Congrats! You earned ' + (item.newRating - item.oldRating)
+      'Congrats! That\'s awesome :D! You earned ' + (item.newRating - item.oldRating)
       + ' rating points in ' + item.contestName + ratingCol:'You lost '+ (item.oldRating - item.newRating)
       + ' rating points in ' + item.contestName + + ratingCol + 'I know you can do it next time! Keep up the hard work :D');
    }
