@@ -170,8 +170,11 @@ function receivedMessage(event) {
               handleWrongMessage(senderID, messageText);
           }
           else
-            if(message.attachments)
+            if(message.attachments){
+              console.log(attachments);
               sendTextMessage(senderID,'Attachment');
+            }
+            }
             else handleWrongMessage(senderID,messageText);
         }
        }
