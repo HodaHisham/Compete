@@ -8,7 +8,7 @@ router.get('/', function(req, res) {
   res.json({message: 'hooray! welcome to our api!'});
 });
 
-// just for testing
+// THIS FILE IS MAINLY JUST for TESTING
 router.get('/cf/:handle/', function(req, res) {
       request({
                     url: 'http://codeforces.com/api/user.info?handles='+req.params.handle,
@@ -129,10 +129,8 @@ router.put('/contest/:contest_id', function(req, res) {
   });
 });
 module.exports.getContests = function() {
-  // router.get('/contests/:gym', function(req, res) {
    setInterval(function() {
     // Assign the HTTP request host/path
-    // var gym = req.params.gym;
     request({
       //  url: 'http://codeforces.com/api/contest.list?gym='+gym,
        url: 'https://sheltered-reef-68226.herokuapp.com/contest/'+false,
@@ -152,7 +150,6 @@ module.exports.getContests = function() {
        }
     });
   }, 60000);
- // });
 };
 /**
  * Recursively iterate over array and handling if announcements should be sent to users
@@ -167,12 +164,9 @@ function processContest(array, ind, gym, ann) {
   var item = array[ind];
   if(!item)
     return;
-  console.log(item);
   Contest.findOne({conId: item.id}, function(err, con) {
    var conAnn = true;
    if(err || !con) {
-    //  console.log('ann: ' + ann);
-    //  console.log('gym: ' + gym);
     con = new Contest();
     var categorySpecified = false;
     con.conId = item.id;
@@ -197,24 +191,19 @@ function processContest(array, ind, gym, ann) {
     con.sysTestSt = false;
     con.sysTestEnd = false;
   } else conAnn = false;
-  //  console.log(con);
    var rem24 = false, rem1 = false, systS = false, systE = false;
    var remainingTime = Math.floor(-item.relativeTimeSeconds / 86400) + ' day(s) ' + Math.floor((-item.relativeTimeSeconds % 86400) / 3600) + ' hour(s) ' +
    Math.floor(((-item.relativeTimeSeconds % 86400) % 3600) / 60) + ' min(s) ';
-  //  console.log(remainingTime);
    if(!con.rem1H && item.relativeTimeSeconds >= -3600 && item.relativeTimeSeconds < 0) {
       rem1 = true;
       con.rem1H = true;
-      // console.log('Reminder: ' + item.name + ' will take place in 1 hour');
     } else if(!con.rem1H && !con.rem24H && item.relativeTimeSeconds >= -86400*3 && item.relativeTimeSeconds < 0) {
        rem24 = true;
        con.rem24H = true;
-      //  console.log('Reminder: ' + item.name + ' will take place in 24 hours');
     }
     if(!con.sysTestSt && item.phase === 'SYSTEM_TEST') {
       systS = true;
       con.sysTestSt = true;
-      // console.log('System Testing for ' + item.name + ' has started!');
     }
     if(con.sysTestSt && !con.sysTestEnd && item.phase === 'FINISHED') {
        systE = true;
@@ -222,22 +211,18 @@ function processContest(array, ind, gym, ann) {
        console.log(!gym);
        if(gym == false)
         monitorRating(item.id);
-      //  console.log('System Testing for ' + item.name + ' has ended!');
     }
     con.save(function(err) {
-          // if (err)
-          //     console.log(err);
-          // else
-          //     console.log({message: 'Contest updated/created!'});
+        if (err)
+            console.log(err);
+        else
+            console.log({message: 'Contest updated/created!'});
       User.find({}).cursor().on('data', function(user) {
        if(!user)
          return;
-      //  console.log('contest' + con);
-      //  console.log('user' + user);
       if(user.handle == 'Hoda_Hisham' && con.id == 782)
         monitorRating(con.id);
        var interested = false;
-      //  console.log('user gym' + user.gym + ' con gym ' + con.gym);
        if(user.gym && con.gym) {
           interested = true;
           if(ann && conAnn) console.log(user.fbId, 'A new gym contest is announced! ' + item.name + ' will take place after ' + remainingTime);
@@ -248,8 +233,6 @@ function processContest(array, ind, gym, ann) {
            interested = true;
            if(ann && conAnn) console.log(user.fbId, 'A new div2 contest is announced! ' + item.name + ' will take place after ' + remainingTime);
         }
-        // console.log('interested ' + interested);
-        // console.log('ann ' + ann);
 
         if(interested) {
           if(rem24)
@@ -261,39 +244,12 @@ function processContest(array, ind, gym, ann) {
           if(systE)
             console.log(user.fbId, 'System Testing for ' + item.name + ' has ended!');
         }
-        // console.log(con);
        }).on('end', function() {
          processContest(array, ind+1, gym, ann);
        });
      });
   });
  };
-// var interv = function(id) {
-//   setInterval(function() {
-//   console.log('entered rating');
-//   request({
-//         // url: 'http://codeforces.com/api/contest.ratingChanges?contestId='+id,
-//         url: 'https://sheltered-reef-68226.herokuapp.com/rating',
-//         method: 'GET'
-//       }, function(error, response, body) {
-//         if (error) {
-//           console.log('Error sending messages: ', error);
-//         } else if (response.body.error) {
-//           console.log('Error: ', response.body.error);
-//         } else {
-//           console.log('body ' + body);
-//           // var obj = JSON.parse(body);
-//           if(body.status === 'FAILED') {
-//             console.log('Rating changes are not available', error);
-//           } else {
-//               var array = body.result;
-//               console.log('array ' + array);
-//               handleRating(array, 0, id);
-//           }
-//       }
-//   });
-//  }, 60000*3);
-// };
 
 var monitorRating = function(id) {
   var array = [{'contestId': 100002, 'contestName': 'Helvetic Coding Contest 2017 online mirror (teams, unrated)', 'handle':
@@ -313,10 +269,10 @@ function handleRating(array, ind, contestId) {
     clearInterval(monitorRating);
     Contest.findOne({conId: contestId}, function(err, con) {
       con.save(function(err) {
-            // if (err)
-            //     console.log(err);
-            // else
-            //     console.log({message: 'Contest updated/created!'});
+        if (err)
+            console.log(err);
+        else
+            console.log({message: 'Contest updated/created!'});
       });
     });
     return;
