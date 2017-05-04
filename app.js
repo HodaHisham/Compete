@@ -423,11 +423,11 @@ function handleRating(array, ind, contestId) {
    if(user) {
      var newcol = calRatingColor(item.newRating);
      var oldcol = calRatingColor(item.oldRating);
-     var ratingCol = newcol === oldcol?'. ':'. You became a(n) ' + newcol + '!';
+     var ratingCol = newcol === oldcol?'. ':'. You became a(n) ' + newcol + '! ';
      sendTextMessage(user.fbId, item.newRating > item.oldRating?
       'Congrats! That\'s awesome :D! You earned ' + (item.newRating - item.oldRating)
       + ' rating points in ' + item.contestName + ratingCol:'You lost '+ (item.oldRating - item.newRating)
-      + ' rating points in ' + item.contestName + + ratingCol + 'I know you can do it next time! Keep up the hard work :D');
+      + ' rating points in ' + item.contestName + ratingCol + 'I know you can do it next time! Keep up the hard work :D');
    }
  }).on('end', function() {
   handleRating(array, ind+1, contestId);
