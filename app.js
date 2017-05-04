@@ -171,7 +171,7 @@ function receivedMessage(event) {
           }
           else
             if(message.attachments)
-              sendAttachment(senderID,messageAttachments);
+              sendTextMessage(senderID,'Attachment');
             else handleWrongMessage(senderID,messageText);
         }
        }
