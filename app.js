@@ -115,8 +115,8 @@ function receivedMessage(event) {
               // handle user messages
               // var messageId = message.mid;
               var messageText = message.text;
-              // var messageAttachments = message.attachments;
-
+              var messageAttachments = message.attachments;
+              if(message.text){
               if(messageText.length > 5) {
               if(messageText.substring(0, 5) == 'sub: ') {
                 handleSubscriptions(user, messageText, true);
@@ -169,6 +169,14 @@ function receivedMessage(event) {
             } else
               handleWrongMessage(senderID, messageText);
           }
+          else
+            if(message.attachments){
+
+              sendTextMessage(senderID,'Don\'t understand attachments :(');
+              
+            }
+            else handleWrongMessage(senderID,messageText);
+        }
        }
     });
 }
@@ -208,6 +216,19 @@ function receivedMessage(event) {
       }
      });
   }
+
+function sendAttachment(recipientId, messageAttachments) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: messageAttachments
+    }
+  };
+
+  callSendAPI(messageData);
+}
 
   /**
    * Converts the messageText to JSON format to send afterwards using Send API provided by messanger
