@@ -10,7 +10,7 @@ setInterval(function() {
     // Assign the HTTP request host/path
     console.log('trying...');
       request({
-         url: 'https://rocky-wildwood-43895.herokuapp.com/api',
+         url: 'https://compete-waker.herokuapp.com/',
         //  url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
          method: 'GET'
         }, function(error, response, body) {
