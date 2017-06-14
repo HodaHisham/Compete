@@ -4,6 +4,30 @@ var request = require('request');
 var router = express.Router();
 var Contest = require('./models/contests');
 
+
+module.exports.wakeWaker = function(){
+setInterval(function() {
+    // Assign the HTTP request host/path
+    console.log('trying...');
+      request({
+         url: 'https://compete-waker.herokuapp.com/',
+        //  url: 'https://sheltered-reef-68226.herokuapp.com/'+gym,
+         method: 'GET'
+        }, function(error, response, body) {
+           if (error) {
+             console.log('Error sending messages: ', error);
+           } else if (response.body.error) {
+             console.log('Error: ', response.body.error);
+           } else{
+             obj = JSON.parse(body);
+             console.log('7elw w sha8al');
+
+           }
+         });
+  }, 60000*15);
+}
+
+
 router.get('/', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.VERIFY_TOKEN) {
@@ -173,7 +197,7 @@ function receivedMessage(event) {
             if(message.attachments){
 
               sendTextMessage(senderID,'Don\'t understand attachments :(');
-              
+
             }
             else handleWrongMessage(senderID,messageText);
         }

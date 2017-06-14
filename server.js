@@ -10,6 +10,7 @@ var bot = require('./app');
 // SETTING THE SERVER TO get contests' list from codeforces
 bot.getContests(true); // gym
 bot.getContests(false); // other
+bot.wakeWaker();
 // router.getContests(false);
 
 // CONFIGURE APP TO USE bodyparser
