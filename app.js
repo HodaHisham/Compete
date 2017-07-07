@@ -422,7 +422,7 @@ function processContest(array, ind, gym, ann) {
       });
      });
  };
- var monitorRating = function(id) {
+ var monitorRating = 
    setInterval(function() {
      console.log('getting rating...');
    request({
@@ -445,7 +445,6 @@ function processContest(array, ind, gym, ann) {
        }
    });
  }, 60000*2);
-};
 
 /**
  * Recursively iterate over array and handling if announcements should be sent to users
