@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "engines": {
     "npm": "3.10.10",
-    "node": "v6.10.2"
+    "node": "v6.11.1"
   },
   "description": "This is a bot that helps competitive programmers in their practice",
   "main": "server.js",
